@@ -12,7 +12,7 @@ app = FastAPI()
 db = mysql.connector.connect(
     host="localhost",
     user="root",       # ganti dengan user MySQL kamu
-    password="",       # ganti dengan password MySQL kamu
+    password="Bm5#2025hH",       # ganti dengan password MySQL kamu
     database="webhook_db"  # ganti dengan nama database
 )
 cursor = db.cursor()
