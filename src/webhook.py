@@ -97,3 +97,14 @@ async def webhook_post(payload: WebhookPayload):
     except Exception as e:
         logger.exception("Unhandled error in webhook_post")
         return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+# --- Endpoint untuk mengetes error logging ---
+@app.get("/debug-error")
+async def debug_error():
+    try:
+        # contoh error (bagi 1 dengan 0)
+        1 / 0
+    except Exception as e:
+        logger.exception("Debug error endpoint triggered!")
+        return {"error": str(e)}
