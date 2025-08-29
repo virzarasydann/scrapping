@@ -8,6 +8,7 @@ import aiofiles
 import os
 import mysql.connector
 from datetime import datetime
+import uuid
 
 # --- Konfigurasi logging ---
 log_dir = "logs"
@@ -91,7 +92,7 @@ async def webhook_post(payload: WebhookPayload):
 
     file_url = payload.url
     extension = payload.extension
-    filename = f"file.{extension}"
+    filename = f"{uuid.uuid4().hex}.{extension}"
     filepath = os.path.join("public", filename)
 
     try:
