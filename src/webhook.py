@@ -59,6 +59,26 @@ async def webhook_get():
     logger.info("Received GET request on /webhook")
     return {"message": "Webhook GET endpoint is alive!"}
 
+@app.get("/webhook/flexible")
+async def webhook_get():
+    logger.info("Received GET request on /webhook")
+    return {"message": "Webhook GET endpoint is alive!"}
+
+
+@app.post("/webhook/flexible")
+async def webhook_flexible(req: Request):
+    """
+    Flexible mode: mirip Express req.body
+    Bisa terima request JSON apapun, tanpa validasi.
+    """
+    body = await req.json()
+    print("Flexible body:", body)
+    return {
+        "status": "ok",
+        "mode": "flexible",
+        "data": body
+    }
+
 # --- POST endpoint untuk menerima data ---
 @app.post("/webhook")
 async def webhook_post(payload: WebhookPayload):
