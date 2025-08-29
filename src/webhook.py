@@ -1,5 +1,7 @@
 import logging
+import time
 from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import aiohttp
 import aiofiles
@@ -20,11 +22,22 @@ logging.basicConfig(
         logging.StreamHandler()  # tetap tampil di terminal / systemd journal
     ]
 )
-
 logger = logging.getLogger(__name__)
 
 # --- FastAPI App ---
 app = FastAPI()
+
+# --- Middleware untuk logging request/response ---
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = (time.time() - start_time) * 1000  # ms
+    logger.info(
+        f"{request.client.host} {request.method} {request.url.path} "
+        f"Status={response.status_code} Time={process_time:.2f}ms"
+    )
+    return response
 
 # --- konfigurasi MySQL ---
 db = mysql.connector.connect(
@@ -35,7 +48,7 @@ db = mysql.connector.connect(
 )
 cursor = db.cursor()
 
-# --- Model untuk request ---
+# --- Model untuk request POST ---
 class WebhookPayload(BaseModel):
     url: str
     extension: str
@@ -83,4 +96,4 @@ async def webhook_post(payload: WebhookPayload):
 
     except Exception as e:
         logger.exception("Unhandled error in webhook_post")
-        return {"error": str(e)}
+        return JSONResponse(status_code=500, content={"error": str(e)})
