@@ -90,7 +90,7 @@ async def webhook_flexible(req: Request):
 # --- POST endpoint untuk menerima data ---
 @app.post("/webhook")
 async def webhook_post(payload: Request):
-    logger.info(f"Received POST payload: {payload.dict()}")
+    
 
     body = await payload.json()   # parse JSON
     logger.info(f"Received POST payload: {body}")
