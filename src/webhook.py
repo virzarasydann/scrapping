@@ -49,10 +49,12 @@ db = mysql.connector.connect(
 )
 cursor = db.cursor()
 
-# --- Model untuk request POST ---
 class WebhookPayload(BaseModel):
     url: str
     extension: str
+    pengirim: str
+    message: str
+    name: str
 
 # --- GET endpoint untuk verifikasi webhook ---
 @app.get("/webhook")
@@ -92,6 +94,9 @@ async def webhook_post(payload: WebhookPayload):
 
     file_url = payload.url
     extension = payload.extension
+    nama = payload.name
+    message = payload.message
+    nomer = payload.pengirim
     filename = f"{uuid.uuid4().hex}.{extension}"
     filepath = os.path.join("public", filename)
 
@@ -108,8 +113,8 @@ async def webhook_post(payload: WebhookPayload):
 
         # simpan metadata ke database
         now = datetime.now()
-        sql = "INSERT INTO files (url, extension, filename, created_at) VALUES (%s, %s, %s, %s)"
-        val = (file_url, extension, filename, now)
+        sql = "INSERT INTO files (nomer,nama,message,url, extension, filename, created_at) VALUES (%s, %s, %s, %s)"
+        val = (nomer,nama,message,file_url, extension, filename, now)
         cursor.execute(sql, val)
         db.commit()
 
