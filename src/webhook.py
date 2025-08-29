@@ -90,22 +90,26 @@ async def webhook_flexible(req: Request):
 # --- POST endpoint untuk menerima data ---
 @app.post("/webhook")
 async def webhook_post(payload: Request):
-    
-
-    body = await payload.json()   # parse JSON
+    body = await payload.json()
     logger.info(f"Received POST payload: {body}")
 
-    file_url = body.get("url"," ")
-    extension = body.get("extension", " ")
-    nama = body.get("name"," ")
-    message = body.get("message", " ")
-    nomer = body.get("pengirim", 0)
+    file_url = body.get("url", "").strip()
+    extension = body.get("extension", "").strip()
+    nama = body.get("name", "").strip()
+    message = body.get("message", "").strip()
+    nomer = body.get("pengirim", "").strip()
+
+    # jika tidak ada file, skip proses
+    if not file_url or not extension:
+        logger.info("No file detected, skipping DB insert")
+        return {"message": "No file to process, skipping database."}
 
     filename = f"{uuid.uuid4().hex}.{extension}"
     filepath = os.path.join("public", filename)
+    now = datetime.now()
 
+    # download file
     try:
-        # download file
         async with aiohttp.ClientSession() as session:
             async with session.get(file_url) as resp:
                 if resp.status != 200:
@@ -114,18 +118,22 @@ async def webhook_post(payload: Request):
                 data = await resp.read()
                 async with aiofiles.open(filepath, "wb") as f:
                     await f.write(data)
+        logger.info(f"File downloaded and saved: {filepath}")
+    except Exception as e:
+        logger.exception("Error downloading file")
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
-        # simpan metadata ke database
-        now = datetime.now()
+    # simpan ke database
+    try:
         sql = """
 INSERT INTO files (nomer, nama, message, url, extension, filename, created_at)
 VALUES (%s, %s, %s, %s, %s, %s, %s)
 """
-        val = (nomer,nama,message,file_url, extension, filename, now)
+        val = (nomer, nama, message, file_url, extension, filename, now)
         cursor.execute(sql, val)
         db.commit()
 
-        logger.info(f"File saved: {filepath}, DB ID: {cursor.lastrowid}")
+        logger.info(f"DB entry created, ID: {cursor.lastrowid}")
         return {
             "message": "Webhook processed successfully",
             "saved_file": filepath,
@@ -133,7 +141,7 @@ VALUES (%s, %s, %s, %s, %s, %s, %s)
         }
 
     except Exception as e:
-        logger.exception("Unhandled error in webhook_post")
+        logger.exception("Unhandled error saving to DB")
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
