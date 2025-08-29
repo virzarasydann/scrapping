@@ -100,36 +100,52 @@ async def webhook_post(payload: Request):
     nomer = body.get("pengirim", "").strip()
     lokasi = body.get("location", "").strip()
     
+    
     if not ((file_url and extension) or lokasi):
         logger.info("No file or location detected, skipping DB insert")
         return {"message": "No file or location to process, skipping database."}
 
-    filename = f"{uuid.uuid4().hex}.{extension}"
-    filepath = os.path.join("public", filename)
+   
+    filename = None
+    filepath = None
     now = datetime.now()
 
     
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(file_url) as resp:
-                if resp.status != 200:
-                    logger.error(f"Failed to download file: {file_url}, status={resp.status}")
-                    return {"error": f"Failed to download file, status {resp.status}"}
-                data = await resp.read()
-                async with aiofiles.open(filepath, "wb") as f:
-                    await f.write(data)
-        logger.info(f"File downloaded and saved: {filepath}")
-    except Exception as e:
-        logger.exception("Error downloading file")
-        return JSONResponse(status_code=500, content={"error": str(e)})
+    if file_url and extension:
+        filename = f"{uuid.uuid4().hex}.{extension}"
+        filepath = os.path.join("public", filename)
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(file_url) as resp:
+                    if resp.status != 200:
+                        logger.error(f"Failed to download file: {file_url}, status={resp.status}")
+                        return {"error": f"Failed to download file, status {resp.status}"}
+                    data = await resp.read()
+                    async with aiofiles.open(filepath, "wb") as f:
+                        await f.write(data)
+            logger.info(f"File downloaded and saved: {filepath}")
+        except Exception as e:
+            logger.exception("Error downloading file")
+           
+            filename = None
+            filepath = None
 
-    
+   
     try:
         sql = """
-INSERT INTO files (nomer, nama, message, url, extension, filename,location, created_at)
-VALUES (%s, %s, %s, %s, %s, %s, %s,%s)
-"""
-        val = (nomer, nama, message, file_url, extension, filename, lokasi,now)
+        INSERT INTO files (nomer, nama, message, url, extension, filename, location, created_at)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        val = (
+            nomer,
+            nama,
+            message,
+            file_url if file_url else None,
+            extension if extension else None,
+            filename,
+            lokasi if lokasi else None,
+            now
+        )
         cursor.execute(sql, val)
         db.commit()
 
@@ -143,6 +159,7 @@ VALUES (%s, %s, %s, %s, %s, %s, %s,%s)
     except Exception as e:
         logger.exception("Unhandled error saving to DB")
         return JSONResponse(status_code=500, content={"error": str(e)})
+
 
 
 # --- Endpoint untuk mengetes error logging ---
