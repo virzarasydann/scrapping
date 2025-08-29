@@ -71,13 +71,18 @@ async def webhook_flexible(req: Request):
     Flexible mode: mirip Express req.body
     Bisa terima request JSON apapun, tanpa validasi.
     """
-    body = await req.json()
-    print("Flexible body:", body)
-    return {
-        "status": "ok",
-        "mode": "flexible",
-        "data": body
-    }
+    try:
+        body = await req.json()
+        logger.info(f"[FLEXIBLE] Request received: {body}")
+        return {
+            "status": "ok",
+            "mode": "flexible",
+            "data": body
+        }
+    except Exception as e:
+        logger.exception("[FLEXIBLE] Error parsing request body")
+        return {"error": str(e)}
+
 
 # --- POST endpoint untuk menerima data ---
 @app.post("/webhook")
