@@ -126,10 +126,10 @@ async def webhook_post(payload: Request):
     
     try:
         sql = """
-INSERT INTO files (nomer, nama, message, url, extension, filename, created_at)
-VALUES (%s, %s, %s, %s, %s, %s, %s)
+INSERT INTO files (nomer, nama, message, url, extension, filename,location, created_at)
+VALUES (%s, %s, %s, %s, %s, %s, %s,%s)
 """
-        val = (nomer, nama, message, file_url, extension, filename, now)
+        val = (nomer, nama, message, file_url, extension, filename, lokasi,now)
         cursor.execute(sql, val)
         db.commit()
 
