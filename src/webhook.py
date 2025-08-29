@@ -117,7 +117,10 @@ async def webhook_post(payload: Request):
 
         # simpan metadata ke database
         now = datetime.now()
-        sql = "INSERT INTO files (nomer,nama,message,url, extension, filename, created_at) VALUES (%s, %s, %s, %s)"
+        sql = """
+INSERT INTO files (nomer, nama, message, url, extension, filename, created_at)
+VALUES (%s, %s, %s, %s, %s, %s, %s)
+"""
         val = (nomer,nama,message,file_url, extension, filename, now)
         cursor.execute(sql, val)
         db.commit()
