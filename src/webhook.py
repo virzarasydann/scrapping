@@ -89,14 +89,18 @@ async def webhook_flexible(req: Request):
 
 # --- POST endpoint untuk menerima data ---
 @app.post("/webhook")
-async def webhook_post(payload: WebhookPayload):
+async def webhook_post(payload: Request):
     logger.info(f"Received POST payload: {payload.dict()}")
 
-    file_url = payload.url
-    extension = payload.extension
-    nama = payload.name
-    message = payload.message
-    nomer = payload.pengirim
+    body = await payload.json()   # parse JSON
+    logger.info(f"Received POST payload: {body}")
+
+    file_url = body.get("url"," ")
+    extension = body.get("extension", " ")
+    nama = body.get("name"," ")
+    message = body.get("message", " ")
+    nomer = body.get("pengirim", 0)
+
     filename = f"{uuid.uuid4().hex}.{extension}"
     filepath = os.path.join("public", filename)
 
