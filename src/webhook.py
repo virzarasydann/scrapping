@@ -11,28 +11,25 @@ app = FastAPI()
 # --- konfigurasi MySQL ---
 db = mysql.connector.connect(
     host="localhost",
-    user="root",       # ganti dengan user MySQL kamu
-    password="Bm5#2025hH",       # ganti dengan password MySQL kamu
-    database="webhook_db"  # ganti dengan nama database
+    user="root",
+    password="Bm5#2025hH",
+    database="webhook_db"
 )
 cursor = db.cursor()
 
-# pastikan ada tabel:
-# CREATE TABLE files (
-#   id INT AUTO_INCREMENT PRIMARY KEY,
-#   url TEXT,
-#   extension VARCHAR(10),
-#   filename VARCHAR(255),
-#   created_at DATETIME
-# );
-
-# --- Model untuk request ---
+# --- Model untuk request POST ---
 class WebhookPayload(BaseModel):
     url: str
     extension: str
 
+# --- GET: biasanya dipakai provider untuk test/verify ---
+@app.get("/webhook")
+async def webhook_get():
+    return {"message": "Webhook GET endpoint is alive!"}
+
+# --- POST: untuk kirim data sebenarnya ---
 @app.post("/webhook")
-async def webhook(payload: WebhookPayload):
+async def webhook_post(payload: WebhookPayload):
     file_url = payload.url
     extension = payload.extension
     filename = f"file.{extension}"
@@ -44,7 +41,6 @@ async def webhook(payload: WebhookPayload):
             if resp.status != 200:
                 return {"error": f"Failed to download file, status {resp.status}"}
             data = await resp.read()
-            # simpan ke file
             async with aiofiles.open(filepath, "wb") as f:
                 await f.write(data)
 
