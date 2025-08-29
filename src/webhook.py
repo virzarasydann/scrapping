@@ -87,7 +87,7 @@ async def webhook_flexible(req: Request):
         return {"error": str(e)}
 
 
-# --- POST endpoint untuk menerima data ---
+
 @app.post("/webhook")
 async def webhook_post(payload: Request):
     body = await payload.json()
@@ -98,17 +98,17 @@ async def webhook_post(payload: Request):
     nama = body.get("name", "").strip()
     message = body.get("message", "").strip()
     nomer = body.get("pengirim", "").strip()
-
-    # jika tidak ada file, skip proses
-    if not file_url or not extension:
-        logger.info("No file detected, skipping DB insert")
-        return {"message": "No file to process, skipping database."}
+    lokasi = body.get("location", "").strip()
+    
+    if not ((file_url and extension) or lokasi):
+        logger.info("No file or location detected, skipping DB insert")
+        return {"message": "No file or location to process, skipping database."}
 
     filename = f"{uuid.uuid4().hex}.{extension}"
     filepath = os.path.join("public", filename)
     now = datetime.now()
 
-    # download file
+    
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(file_url) as resp:
@@ -123,7 +123,7 @@ async def webhook_post(payload: Request):
         logger.exception("Error downloading file")
         return JSONResponse(status_code=500, content={"error": str(e)})
 
-    # simpan ke database
+    
     try:
         sql = """
 INSERT INTO files (nomer, nama, message, url, extension, filename, created_at)
