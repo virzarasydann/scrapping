@@ -165,30 +165,75 @@ async def webhook_post(payload: Request):
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
+from fastapi import FastAPI
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+import time
+import logging
+
+app = FastAPI()
+logger = logging.getLogger(__name__)
+
 @app.post("/run-automation")
 def run_automation():
     start_time = time.time()
 
+    # Setup Chrome headless
     options = Options()
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
 
     driver = webdriver.Chrome(options=options)
-    driver.get("https://proyek.gesyagroup.id/admin/login")
+    driver.get("https://webscraper.io/test-sites/e-commerce/allinone")
+    driver.implicitly_wait(3)
 
-    # login
-    driver.find_element(By.NAME, "username").send_keys("master")
-    driver.find_element(By.NAME, "password").send_keys("GsY2025")
-    driver.find_element(By.CSS_SELECTOR, ".btn-login").click()
-    logger.info(f"Success and clicked")
-    title = driver.title
+    # Ambil semua card thumbnail
+    cards = driver.find_elements(By.CSS_SELECTOR, ".card.thumbnail")
+
+    products = []
+    for card in cards:
+        try:
+            title = card.find_element(By.CSS_SELECTOR, "a.title").text.strip()
+        except:
+            title = None
+
+        try:
+            price = card.find_element(By.CSS_SELECTOR, "h4.price > span").text.strip()
+        except:
+            price = None
+
+        try:
+            description = card.find_element(By.CSS_SELECTOR, "p.description").text.strip()
+        except:
+            description = None
+
+        try:
+            review_count = card.find_element(By.CSS_SELECTOR, ".review-count span").text.strip()
+        except:
+            review_count = None
+
+        products.append({
+            "title": title,
+            "price": price,
+            "description": description,
+            "reviews": review_count
+        })
+
+    page_title = driver.title
     driver.quit()
 
     response_time = round(time.time() - start_time, 2)
-    logger.info(f" Get Title : {title}")
+    logger.info(f"Scraped {len(products)} products")
 
-    return {"status": "success", "page_title": title, "response_time": f"{response_time} seconds"}
+    return {
+        "status": "success",
+        "page_title": page_title,
+        "response_time": f"{response_time} seconds",
+        "data": products
+    }
+
 
     
 
