@@ -13,7 +13,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 import time
-from src.config import get_config
+from config import get_config
 
 log_dir = "logs"
 os.makedirs(log_dir, exist_ok=True)
