@@ -13,8 +13,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 import time
+from src.config import get_config
 
-# --- Konfigurasi logging ---
 log_dir = "logs"
 os.makedirs(log_dir, exist_ok=True)
 
@@ -44,14 +44,20 @@ async def log_requests(request: Request, call_next):
     )
     return response
 
-# --- konfigurasi MySQL ---
+
+
+
+config = get_config()
+
 db = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="Bm5#2025hH",
-    database="webhook_db"
+    host=config.DB_HOST,
+    user=config.DB_USER,
+    password=config.DB_PASSWORD,
+    database=config.DB_NAME,
+    port=config.DB_PORT
 )
 cursor = db.cursor()
+
 
 class WebhookPayload(BaseModel):
     url: str

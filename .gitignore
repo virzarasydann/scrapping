@@ -54,3 +54,7 @@ coverage.xml
 .vscode/
 .idea/
 *.swp
+
+# Environment
+.env
+.env.prod
