@@ -9,6 +9,10 @@ import os
 import mysql.connector
 from datetime import datetime
 import uuid
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+import time
 
 # --- Konfigurasi logging ---
 log_dir = "logs"
