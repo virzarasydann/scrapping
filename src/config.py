@@ -9,6 +9,7 @@ APP_ENV = os.getenv("APP_ENV", "development")
 class BaseConfig:
     DB_USER = os.getenv("DB_USER", "root")
     DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+    print(DB_PASSWORD)
     DB_NAME = os.getenv("DB_NAME", "webhook_db")
     
 
