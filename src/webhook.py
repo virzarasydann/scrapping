@@ -181,11 +181,12 @@ def run_automation():
     driver.find_element(By.NAME, "username").send_keys("master")
     driver.find_element(By.NAME, "password").send_keys("GsY2025")
     driver.find_element(By.CSS_SELECTOR, ".btn-login").click()
-
+    logger.info(f"Success and clicked")
     title = driver.title
     driver.quit()
 
     response_time = round(time.time() - start_time, 2)
+    logger.info(f" Get Title : {title}")
 
     return {"status": "success", "page_title": title, "response_time": f"{response_time} seconds"}
 
