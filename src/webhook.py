@@ -54,7 +54,6 @@ db = mysql.connector.connect(
     user=config.DB_USER,
     password=config.DB_PASSWORD,
     database=config.DB_NAME,
-    port=config.DB_PORT
 )
 cursor = db.cursor()
 
