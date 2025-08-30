@@ -14,7 +14,7 @@ class BaseConfig:
     
 
 class DevelopmentConfig(BaseConfig):
-    DB_HOST = "103.191.92.250"   # host dev (bukan phpMyAdmin, tapi IP MySQL server)
+    DB_HOST = "localhost"   # host dev (bukan phpMyAdmin, tapi IP MySQL server)
 
 class ProductionConfig(BaseConfig):
     DB_HOST = "localhost"
