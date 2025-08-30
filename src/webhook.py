@@ -165,15 +165,7 @@ async def webhook_post(payload: Request):
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
-from fastapi import FastAPI
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-import time
-import logging
 
-app = FastAPI()
-logger = logging.getLogger(__name__)
 
 @app.post("/run-automation")
 def run_automation():
