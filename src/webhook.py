@@ -161,6 +161,31 @@ async def webhook_post(payload: Request):
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
+@app.post("/run-automation")
+def run_automation():
+    start_time = time.time()
+
+    options = Options()
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+
+    driver = webdriver.Chrome(options=options)
+    driver.get("https://proyek.gesyagroup.id/admin/login")
+
+    # login
+    driver.find_element(By.NAME, "username").send_keys("master")
+    driver.find_element(By.NAME, "password").send_keys("GsY2025")
+    driver.find_element(By.CSS_SELECTOR, ".btn-login").click()
+
+    title = driver.title
+    driver.quit()
+
+    response_time = round(time.time() - start_time, 2)
+
+    return {"status": "success", "page_title": title, "response_time": f"{response_time} seconds"}
+
+    
 
 # --- Endpoint untuk mengetes error logging ---
 @app.get("/debug-error")
