@@ -1,6 +1,6 @@
 import logging
 import time
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import aiohttp
@@ -13,11 +13,19 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 import time
-from src.config import get_config
+from src.configuration.config import get_config
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
+from sqlalchemy.orm import Session
+from src.configuration.database import get_db
+from src.models.files_models import File
+
 
 log_dir = "logs"
 os.makedirs(log_dir, exist_ok=True)
-
+BASE_DIR = Path(__file__).resolve().parent
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -31,7 +39,18 @@ logger = logging.getLogger(__name__)
 
 # --- FastAPI App ---
 app = FastAPI()
-
+templates = Jinja2Templates(directory=BASE_DIR / "templates" / "pages")
+app.mount("/UI", StaticFiles(directory=BASE_DIR / "templates" / "static" / "UI"), name="UI")
+app.mount("/assets", StaticFiles(directory=BASE_DIR / "templates" / "static" / "assets"), name="assets")
+app.mount("/css", StaticFiles(directory=BASE_DIR / "templates" / "static" / "css"), name="css")
+app.mount("/docs", StaticFiles(directory=BASE_DIR / "templates" / "static" / "docs"), name="docs")
+app.mount("/examples", StaticFiles(directory=BASE_DIR / "templates" / "static" / "examples"), name="examples")
+app.mount("/forms", StaticFiles(directory=BASE_DIR / "templates" / "static" / "forms"), name="forms")
+app.mount("/generate", StaticFiles(directory=BASE_DIR / "templates" / "static" / "generate"), name="generate")
+app.mount("/js", StaticFiles(directory=BASE_DIR / "templates" / "static" / "js"), name="js")
+app.mount("/layout", StaticFiles(directory=BASE_DIR / "templates" / "static" / "layout"), name="layout")
+app.mount("/tables", StaticFiles(directory=BASE_DIR / "templates" / "static" / "tables"), name="tables")
+app.mount("/widgets", StaticFiles(directory=BASE_DIR / "templates" / "static" / "widgets"), name="widgets")
 # --- Middleware untuk logging request/response ---
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
@@ -47,15 +66,6 @@ async def log_requests(request: Request, call_next):
 
 
 
-config = get_config()
-
-db = mysql.connector.connect(
-    host=config.DB_HOST,
-    user=config.DB_USER,
-    password=config.DB_PASSWORD,
-    database=config.DB_NAME,
-)
-cursor = db.cursor()
 
 
 class WebhookPayload(BaseModel):
@@ -64,6 +74,21 @@ class WebhookPayload(BaseModel):
     pengirim: str
     message: str
     name: str
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    return templates.TemplateResponse("dashboard/index.html", {"request": request})
+
+@app.get("/inbox", response_class=HTMLResponse)
+async def inbox(request: Request, db: Session = Depends(get_db)):
+    messages = db.query(File).all()
+    return templates.TemplateResponse(
+        "inbox/index.html",
+        {"request": request, "messages": messages}
+    )
+
+@app.get("/dashboard/v2", response_class=HTMLResponse)
+async def dashboardv2(request: Request):
+    return templates.TemplateResponse("index2.html", {"request": request})
 
 # --- GET endpoint untuk verifikasi webhook ---
 @app.get("/webhook")
