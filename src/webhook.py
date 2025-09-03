@@ -123,7 +123,7 @@ async def webhook_flexible(req: Request):
 
 
 @app.post("/webhook")
-async def webhook_post(payload: Request):
+async def webhook_post(payload: Request, db: Session = Depends(get_db)):
     body = await payload.json()
     logger.info(f"Received POST payload: {body}")
 
@@ -134,12 +134,18 @@ async def webhook_post(payload: Request):
     nomer = body.get("pengirim", "").strip()
     lokasi = body.get("location", "").strip()
     
-    
-    if not ((file_url and extension) or lokasi):
-        logger.info("No file or location detected, skipping DB insert")
-        return {"message": "No file or location to process, skipping database."}
+  
+    if "#LAPOR" not in message.upper():
+        logger.info("Message does not contain #LAPOR, skipping DB insert")
+        return {"message": "Keyword #LAPOR not found, skipping database."}
 
-   
+    
+    cleaned_message = message.upper().split("#LAPOR", 1)[1].strip()
+
+    if not ((file_url and extension) or lokasi or cleaned_message):
+        logger.info("No file, location, or message detected, skipping DB insert")
+        return {"message": "No valid data to process, skipping database."}
+
     filename = None
     filepath = None
     now = datetime.now()
@@ -160,39 +166,36 @@ async def webhook_post(payload: Request):
             logger.info(f"File downloaded and saved: {filepath}")
         except Exception as e:
             logger.exception("Error downloading file")
-           
             filename = None
             filepath = None
 
-   
+    
     try:
-        sql = """
-        INSERT INTO files (nomer, nama, message, url, extension, filename, location, created_at)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-        """
-        val = (
-            nomer,
-            nama,
-            message,
-            file_url if file_url else None,
-            extension if extension else None,
-            filename,
-            lokasi if lokasi else None,
-            now
+        
+        new_file = File(
+            nomer=nomer,
+            nama=nama,
+            message=cleaned_message,
+            url=file_url if file_url else None,
+            extension=extension if extension else None,
+            filename=filename,
+            location=lokasi if lokasi else None,
         )
-        cursor.execute(sql, val)
+        db.add(new_file)
         db.commit()
+        db.refresh(new_file)
 
-        logger.info(f"DB entry created, ID: {cursor.lastrowid}")
+        logger.info(f"DB entry created, ID: {new_file.id}")
         return {
-            "message": "Webhook processed successfully",
+            "message": "Webhook processed successfully (LAPOR)",
             "saved_file": filepath,
-            "db_id": cursor.lastrowid
+            "db_id": new_file.id
         }
 
     except Exception as e:
         logger.exception("Unhandled error saving to DB")
         return JSONResponse(status_code=500, content={"error": str(e)})
+
 
 
 
