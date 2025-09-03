@@ -36,7 +36,8 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
-
+PUBLIC_DIR = BASE_DIR / "public"
+PUBLIC_DIR.mkdir(exist_ok=True)
 # --- FastAPI App ---
 app = FastAPI()
 templates = Jinja2Templates(directory=BASE_DIR / "templates" / "pages")
@@ -153,7 +154,7 @@ async def webhook_post(payload: Request, db: Session = Depends(get_db)):
     
     if file_url and extension:
         filename = f"{uuid.uuid4().hex}.{extension}"
-        filepath = os.path.join("public", filename)
+        filepath = os.path.join(PUBLIC_DIR, filename)
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(file_url) as resp:
