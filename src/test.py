@@ -28,14 +28,14 @@ import requests
 #     "location": ""
 # }
 
-payload = {
-    "url": "",
-    "extension": "",
-    "message": "halo",
-    "name": "",
-    "pengirim": "081232167185",
-    "location": ""
-}
+# payload = {
+#     "url": "",
+#     "extension": "",
+#     "message": "halo",
+#     "name": "",
+#     "pengirim": "081232167185",
+#     "location": ""
+# }
 
 res = requests.post("http://localhost:8000/webhook", json=payload)
 print(res.json())
