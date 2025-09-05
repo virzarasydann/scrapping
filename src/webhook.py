@@ -21,6 +21,7 @@ from pathlib import Path
 from sqlalchemy.orm import Session
 from src.configuration.database import get_db
 from src.models.files_models import File
+from src.models.listeners_models import Listener
 
 
 log_dir = "logs"
@@ -134,24 +135,59 @@ async def webhook_post(payload: Request, db: Session = Depends(get_db)):
     message = body.get("message", "").strip()
     nomer = body.get("pengirim", "").strip()
     lokasi = body.get("location", "").strip()
-    
-  
-    if "#LAPOR" not in message.upper():
-        logger.info("Message does not contain #LAPOR, skipping DB insert")
-        return {"message": "Keyword #LAPOR not found, skipping database."}
 
-    
-    cleaned_message = message.upper().split("#LAPOR", 1)[1].strip()
+    # ==============================
+    # 🔹 AKTIFKAN LISTENER (#LAPOR)
+    # ==============================
+    if "#LAPOR" in message.upper():
+        listener = db.query(Listener).filter(Listener.nomer == nomer).first()
+        if listener:
+            listener.aktif = True
+            listener.started_at = datetime.now()
+            listener.ended_at = None
+            logger.info(f"Listener diaktifkan kembali untuk nomor {nomer}")
+        else:
+            listener = Listener(nomer=nomer, aktif=True)
+            db.add(listener)
+            logger.info(f"Listener baru dibuat untuk nomor {nomer}")
+        db.commit()
+        return {"message": f"Listener aktif untuk {nomer}"}
+
+    # ==============================
+    # 🔹 NONAKTIFKAN LISTENER (#SELESAI)
+    # ==============================
+    if "#SELESAI" in message.upper():
+        listener = db.query(Listener).filter(Listener.nomer == nomer, Listener.aktif == True).first()
+        if listener:
+            listener.aktif = False
+            listener.ended_at = datetime.now()
+            db.commit()
+            logger.info(f"Listener dinonaktifkan untuk nomor {nomer}")
+            return {"message": f"Listener dimatikan untuk {nomer}"}
+        else:
+            logger.info(f"Tidak ada listener aktif untuk {nomer} yang bisa dimatikan")
+            return {"message": f"Tidak ada listener aktif untuk {nomer}"}
+
+    # ==============================
+    # 🔹 CEK LISTENER AKTIF
+    # ==============================
+    listener = db.query(Listener).filter(Listener.nomer == nomer, Listener.aktif == True).first()
+    if not listener:
+        logger.info(f"Tidak ada listener aktif untuk {nomer}, abaikan pesan")
+        return {"message": "Listener tidak aktif, pesan diabaikan."}
+
+    # ==============================
+    # 🔹 SIMPAN DATA (FILE / TEKS / LOKASI)
+    # ==============================
+    cleaned_message = message.strip()
 
     if not ((file_url and extension) or lokasi or cleaned_message):
-        logger.info("No file, location, or message detected, skipping DB insert")
-        return {"message": "No valid data to process, skipping database."}
+        logger.info("Tidak ada file, lokasi, atau pesan yang valid")
+        return {"message": "Tidak ada data valid, skip database."}
 
     filename = None
     filepath = None
-    now = datetime.now()
 
-    
     if file_url and extension:
         filename = f"{uuid.uuid4().hex}.{extension}"
         filepath = os.path.join(PUBLIC_DIR, filename)
@@ -159,20 +195,18 @@ async def webhook_post(payload: Request, db: Session = Depends(get_db)):
             async with aiohttp.ClientSession() as session:
                 async with session.get(file_url) as resp:
                     if resp.status != 200:
-                        logger.error(f"Failed to download file: {file_url}, status={resp.status}")
-                        return {"error": f"Failed to download file, status {resp.status}"}
+                        logger.error(f"Gagal download file: {file_url}, status={resp.status}")
+                        return {"error": f"Gagal download file, status {resp.status}"}
                     data = await resp.read()
                     async with aiofiles.open(filepath, "wb") as f:
                         await f.write(data)
-            logger.info(f"File downloaded and saved: {filepath}")
-        except Exception as e:
-            logger.exception("Error downloading file")
+            logger.info(f"File berhasil disimpan: {filepath}")
+        except Exception:
+            logger.exception("Error saat download file")
             filename = None
             filepath = None
 
-    
     try:
-        
         new_file = File(
             nomer=nomer,
             nama=nama,
@@ -186,15 +220,15 @@ async def webhook_post(payload: Request, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(new_file)
 
-        logger.info(f"DB entry created, ID: {new_file.id}")
+        logger.info(f"Data tersimpan, ID: {new_file.id}")
         return {
-            "message": "Webhook processed successfully (LAPOR)",
+            "message": "Pesan disimpan (listener aktif)",
             "saved_file": filepath,
             "db_id": new_file.id
         }
 
     except Exception as e:
-        logger.exception("Unhandled error saving to DB")
+        logger.exception("Error saat simpan DB")
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
