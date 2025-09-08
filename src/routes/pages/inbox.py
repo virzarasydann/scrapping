@@ -1,0 +1,20 @@
+from fastapi import APIRouter, Request, Depends
+
+from fastapi.templating import Jinja2Templates
+from src.configuration.config import SRC_DIR
+from fastapi.responses import HTMLResponse
+from src.configuration.database import get_db
+from sqlalchemy.orm import Session
+from src.models.files_models import File
+
+router = APIRouter(prefix="/inbox", tags=["Pages"])
+templates = Jinja2Templates(directory=SRC_DIR / "templates" / "pages")
+
+
+@router.get("", response_class=HTMLResponse)
+async def inbox(request: Request, db: Session = Depends(get_db)):
+    messages = db.query(File).all()
+    return templates.TemplateResponse(
+        "inbox/index.html",
+        {"request": request, "messages": messages}
+    )

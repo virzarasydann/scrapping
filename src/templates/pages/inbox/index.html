@@ -24,6 +24,7 @@
                             <th>Nama</th>
                             <th>Pesan</th>
                             <th>Location</th>
+                            <th>Foto</th>
                         </tr>
                     </thead>
                    
@@ -35,6 +36,16 @@
                             <td>{{ msg.nama }}</td>
                             <td>{{ msg.message }}</td>
                             <td>{{ msg.location }}</td>
+                            <td>
+                                {% if msg.filename %}
+                                <a href="/public/{{ msg.filename }}" target="_blank" class="btn btn-sm btn-primary">
+                                    Preview
+                                </a>
+                                {% else %}
+                                <span class="text-muted">Tidak ada foto</span>
+                                {% endif %}
+                            </td>
+                            
                         </tr>
                         {% endfor %}              
                     </tbody>

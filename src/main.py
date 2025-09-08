@@ -1,30 +1,56 @@
-from fastapi import FastAPI, Request, Form
-from fastapi.responses import HTMLResponse
+import os
+from pathlib import Path
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel
-
-app = FastAPI()
-templates = Jinja2Templates(directory="templates")
-
-@app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
-    return templates.TemplateResponse("automation_dashboard2.html", {"request": request})
-
-class LoginRequest(BaseModel):
-    phone: str
-
-@app.post("/submit-login")
-async def submit_login(data: LoginRequest):
-    phone = data.phone
-
-    # contoh: panggil Selenium atau proses OTP
-    # selenium_logic(phone)
-
-    return JSONResponse({
-        "phone": phone,
-        "status": f"OTP dikirim ke WhatsApp {phone}!"
-    })
 
 
+from src.configuration.logger import setup_logging
+from src.configuration.config import SRC_DIR,PUBLIC_DIR
+from src.configuration.static_config import setup_static_files
+
+from src.routes.api import webhook
+from src.routes import api_routers, page_routers
+
+logger = setup_logging()
+
+
+app = FastAPI(
+    title="Webhook Scraping API",
+    description="API untuk menangani webhook dan proses scraping",
+    version="1.0.0"
+)
+setup_static_files(app)
+
+# app.include_router(webhook.router, prefix="/api/v1")
+for router in api_routers:
+    app.include_router(router)
+
+
+for router in page_routers:
+    app.include_router(router)
+
+print(f"🎯 Mounted {len(api_routers)} API routes")
+print(f"🎯 Mounted {len(page_routers)} Page routes")
+
+
+
+
+
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Jalankan saat aplikasi berhenti"""
+    logger.info("Application shutting down")
+
+
+@app.get("/")
+async def root():
+    return {"message": "Welcome to Webhook Scraping API"}
+
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
 

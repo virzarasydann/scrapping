@@ -3,16 +3,27 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
-# ambil APP_ENV dari environment OS dulu
+
+SRC_DIR = Path(__file__).resolve().parent.parent
+
+
+CONFIGURATION_DIR = Path(__file__).resolve().parent
+
+PUBLIC_DIR = SRC_DIR / "public"
+
+PUBLIC_DIR.mkdir(exist_ok=True)
+
+TEMPLATES_DIR = SRC_DIR / "templates"
+
 APP_ENV = os.getenv("APP_ENV", "development")
 
 # pilih file env sesuai APP_ENV
 if APP_ENV == "production":
-    env_file = BASE_DIR / ".env.prod"
+    env_file = ROOT_DIR / ".env.prod"
 else:
-    env_file = BASE_DIR / ".env"
+    env_file = ROOT_DIR / ".env"
 
 # load file env yang sesuai
 load_dotenv(env_file)

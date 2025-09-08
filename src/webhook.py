@@ -24,22 +24,11 @@ from src.models.files_models import File
 from src.models.listeners_models import Listener
 
 
-log_dir = "logs"
-os.makedirs(log_dir, exist_ok=True)
+
 BASE_DIR = Path(__file__).resolve().parent
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.FileHandler(os.path.join(log_dir, "app.log")),      # log umum
-        logging.FileHandler(os.path.join(log_dir, "error.log")),    # log error
-        logging.StreamHandler()  # tetap tampil di terminal / systemd journal
-    ]
-)
-logger = logging.getLogger(__name__)
 PUBLIC_DIR = BASE_DIR / "public"
 PUBLIC_DIR.mkdir(exist_ok=True)
-# --- FastAPI App ---
+
 app = FastAPI()
 templates = Jinja2Templates(directory=BASE_DIR / "templates" / "pages")
 app.mount("/UI", StaticFiles(directory=BASE_DIR / "templates" / "static" / "UI"), name="UI")
@@ -53,12 +42,14 @@ app.mount("/js", StaticFiles(directory=BASE_DIR / "templates" / "static" / "js")
 app.mount("/layout", StaticFiles(directory=BASE_DIR / "templates" / "static" / "layout"), name="layout")
 app.mount("/tables", StaticFiles(directory=BASE_DIR / "templates" / "static" / "tables"), name="tables")
 app.mount("/widgets", StaticFiles(directory=BASE_DIR / "templates" / "static" / "widgets"), name="widgets")
-# --- Middleware untuk logging request/response ---
+app.mount("/public", StaticFiles(directory=PUBLIC_DIR), name="public")
+
+
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     start_time = time.time()
     response = await call_next(request)
-    process_time = (time.time() - start_time) * 1000  # ms
+    process_time = (time.time() - start_time) * 1000  
     logger.info(
         f"{request.client.host} {request.method} {request.url.path} "
         f"Status={response.status_code} Time={process_time:.2f}ms"
@@ -92,7 +83,7 @@ async def inbox(request: Request, db: Session = Depends(get_db)):
 async def dashboardv2(request: Request):
     return templates.TemplateResponse("index2.html", {"request": request})
 
-# --- GET endpoint untuk verifikasi webhook ---
+
 @app.get("/webhook")
 async def webhook_get():
     logger.info("Received GET request on /webhook")
@@ -136,9 +127,7 @@ async def webhook_post(payload: Request, db: Session = Depends(get_db)):
     nomer = body.get("pengirim", "").strip()
     lokasi = body.get("location", "").strip()
 
-    # ==============================
-    # 🔹 AKTIFKAN LISTENER (#LAPOR)
-    # ==============================
+    
     if "#LAPOR" in message.upper():
         listener = db.query(Listener).filter(Listener.nomer == nomer).first()
         if listener:
@@ -153,9 +142,7 @@ async def webhook_post(payload: Request, db: Session = Depends(get_db)):
         db.commit()
         return {"message": f"Listener aktif untuk {nomer}"}
 
-    # ==============================
-    # 🔹 NONAKTIFKAN LISTENER (#SELESAI)
-    # ==============================
+   
     if "#SELESAI" in message.upper():
         listener = db.query(Listener).filter(Listener.nomer == nomer, Listener.aktif == True).first()
         if listener:
@@ -168,17 +155,13 @@ async def webhook_post(payload: Request, db: Session = Depends(get_db)):
             logger.info(f"Tidak ada listener aktif untuk {nomer} yang bisa dimatikan")
             return {"message": f"Tidak ada listener aktif untuk {nomer}"}
 
-    # ==============================
-    # 🔹 CEK LISTENER AKTIF
-    # ==============================
+    
     listener = db.query(Listener).filter(Listener.nomer == nomer, Listener.aktif == True).first()
     if not listener:
         logger.info(f"Tidak ada listener aktif untuk {nomer}, abaikan pesan")
         return {"message": "Listener tidak aktif, pesan diabaikan."}
 
-    # ==============================
-    # 🔹 SIMPAN DATA (FILE / TEKS / LOKASI)
-    # ==============================
+    
     cleaned_message = message.strip()
 
     if not ((file_url and extension) or lokasi or cleaned_message):
@@ -297,11 +280,11 @@ def run_automation():
 
     
 
-# --- Endpoint untuk mengetes error logging ---
+
 @app.get("/debug-error")
 async def debug_error():
     try:
-        # contoh error (bagi 1 dengan 0)
+        
         1 / 0
     except Exception as e:
         logger.exception("Debug error endpoint triggered!")
