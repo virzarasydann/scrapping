@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+
+{% block title %}Data Tables{% endblock %}
+
+{% block content %}
+<div class="app-content-header">
+    <div class="container-fluid">
+        <h3 class="mb-3">Data Tables</h3>
+    </div>
+</div>
+
+<div class="app-content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">User List</h3>
+            </div>
+            <div class="card-body">
+                <table id="example" class="table table-striped table-bordered" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>No HP</th>
+                            <th>Nama</th>
+                            <th>Pesan</th>
+                            <th>Location</th>
+                            <th>Foto</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% if data is defined and data %}
+                        {% for msg in data %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ msg.nomer or "-" }}</td>
+                            <td>{{ msg.nama or "-" }}</td>
+                            <td>{{ msg.message or "-" }}</td>
+                            <td>{{ msg.location or "-" }}</td>
+                            <td>
+                                {% if msg.filename %}
+                                <a href="/public/{{ msg.filename }}" target="_blank" class="btn btn-sm btn-primary">
+                                    Preview
+                                </a>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                <i class="bi bi-search display-4 d-block mb-2"></i>
+                                <h4>Data Tidak Ditemukan</h4>
+                                <p>Nomor yang dicari tidak memiliki data dalam sistem</p>
+                            </td>
+                        </tr>
+                        {% endif %}            </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

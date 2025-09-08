@@ -52,7 +52,7 @@ class WebhookService:
             listener.ended_at = None
             logger.info(f"Listener diaktifkan kembali untuk nomor {nomer}")
         else:
-            listener = Listener(nomer=nomer, aktif=True)
+            listener = Listener(nomer=nomer, aktif=True, nama=nama)
             self.db.add(listener)
             logger.info(f"Listener baru dibuat untuk nomor {nomer}")
         
