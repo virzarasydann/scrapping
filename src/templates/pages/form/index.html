@@ -98,6 +98,21 @@
                             <input type="file" class="form-control" id="lokasi" name="lokasi" accept=".jpg,.jpeg,">
                         </div>
 
+                        <!-- Lokasi -->
+                        <div class="col-md-6">
+                            <label for="lokasi" class="form-label">Lokasi</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="lokasi_koor" name="lokasi_koor" placeholder="Klik tombol untuk ambil lokasi"
+                                    readonly>
+                                <button type="button" class="btn btn-outline-primary" onclick="getLocation()">
+                                    Ambil Lokasi
+                                </button>
+                            </div>
+                            <small class="text-muted">Lokasi diisi otomatis dari browser (minta izin).</small>
+                        </div>
+                        
+                        
+
                     </div>
 
                     <div class="mt-4 text-end">
@@ -110,4 +125,39 @@
         </div>
     </div>
 </div>
+
+<script>
+   function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    document.getElementById("lokasi_koor").value = `${lat},${lon}`;
+                },
+                function (error) {
+                    let msg;
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            msg = "User menolak permintaan lokasi.";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            msg = "Informasi lokasi tidak tersedia.";
+                            break;
+                        case error.TIMEOUT:
+                            msg = "Waktu permintaan lokasi habis.";
+                            break;
+                        default:
+                            msg = "Error tidak dikenal.";
+                    }
+                    alert("Gagal mengambil lokasi: " + msg);
+                }
+            );
+        } else {
+            alert("Browser tidak mendukung geolocation.");
+        }
+    }
+
+</script>
+
 {% endblock %}
