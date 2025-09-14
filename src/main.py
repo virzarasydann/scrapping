@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 
 
 from src.configuration.logger import setup_logging
-from src.configuration.config import SRC_DIR,PUBLIC_DIR
+from src.configuration.config import SRC_DIR,PUBLIC_DIR, APP_ENV
 from src.configuration.static_config import setup_static_files
 
 from src.routes.api import webhook
@@ -14,7 +14,7 @@ from src.routes import api_routers, page_routers
 
 logger = setup_logging()
 
-
+print(APP_ENV)
 app = FastAPI(
     title="Webhook Scraping API",
     description="API untuk menangani webhook dan proses scraping",
