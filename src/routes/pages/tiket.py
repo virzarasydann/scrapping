@@ -66,9 +66,7 @@ async def ticket_create(
 ):
     import os
     import httpx
-    import json
 
-    
     BASE_URL = "http://103.191.92.250:8000/public"
 
     def file_url(filename: str) -> str:
@@ -103,7 +101,7 @@ async def ticket_create(
     db.commit()
     db.refresh(ticket)
 
-    # Pesan WhatsApp
+    # Pesan WhatsApp untuk file pertama
     message = f"""Tiket baru berhasil dibuat!
 No Tiket: {ticket.no_tiket}
 Customer: {ticket.customer}
@@ -117,21 +115,19 @@ Lokasi Koor: {ticket.lokasi_koordinat}
 
 Pesan ini dikirim otomatis"""
 
-    
     files = [before_name, after_name, serial_name, lokasi_name]
     headers = {"Authorization": f"{TOKEN}"}
 
     async with httpx.AsyncClient() as client:
-        for filename in files:
+        for idx, filename in enumerate(files):
             if not filename:
                 continue
 
-            payload_json = {
-                
-                "url": file_url(filename)  # URL publik lengkap atau kosong di dev
-            }
+            payload = {"target": GROUP_ID, "url": file_url(filename)}
 
-            payload = {"target": GROUP_ID,"message":message ,"templateJSON": json.dumps(payload_json)}
+            # Hanya file pertama yang dikirim beserta message
+            if idx == 0:
+                payload["message"] = message
 
             try:
                 response = await client.post(
