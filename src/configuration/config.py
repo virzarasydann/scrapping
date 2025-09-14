@@ -27,7 +27,8 @@ else:
 
 # load file env yang sesuai
 load_dotenv(env_file)
-
+TOKEN = os.getenv("TOKEN")
+GROUP_ID = os.getenv("GROUP_ID")
 class BaseConfig:
     DB_USER = os.getenv("DB_USER", "root")
     DB_PASSWORD = os.getenv("DB_PASSWORD", "")

@@ -1,0 +1,113 @@
+{% extends "layout.html" %}
+
+{% block title %}Form Input Tiket{% endblock %}
+
+{% block content %}
+<div class="app-content-header">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+        <h3 class="mb-3">Form Input Tiket</h3>
+        <a href="{{ url_for('tiket') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Kembali
+        </a>
+    </div>
+</div>
+
+<div class="app-content">
+    <div class="container-fluid">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h3 class="card-title">Tambah Data Tiket</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('ticket_post') }}" enctype="multipart/form-data">
+                    <div class="row g-3">
+
+                        <!-- Tanggal -->
+                        <div class="col-md-4">
+                            <label for="tgl" class="form-label">Tanggal</label>
+                            <input type="date" class="form-control" id="tanggal" name="tanggal" required>
+                        </div>
+
+                        <!-- No Tiket -->
+                        <div class="col-md-4">
+                            <label for="no_tiket" class="form-label">No Tiket</label>
+                            <input type="text" class="form-control" id="no_tiket" name="no_tiket"
+                                placeholder="Isi No Tiket" required>
+                        </div>
+
+                        <!-- Customer -->
+                        <div class="col-md-4">
+                            <label for="customer" class="form-label">Customer</label>
+                            <input type="text" class="form-control" id="customer" name="customer"
+                                placeholder="Nama Customer" required>
+                        </div>
+
+                        <!-- Model -->
+                        <div class="col-md-6">
+                            <label for="model" class="form-label">Model</label>
+                            <input type="text" class="form-control" id="model" name="model" placeholder="Model Produk">
+                        </div>
+
+                        <!-- Keluhan -->
+                        <div class="col-md-6">
+                            <label for="keluhan" class="form-label">Keluhan</label>
+                            <textarea class="form-control" id="keluhan" name="keluhan" rows="2"
+                                placeholder="Isi keluhan"></textarea>
+                        </div>
+
+                        <!-- Teknisi -->
+                        <div class="col-md-4">
+                            <label for="teknisi" class="form-label">Teknisi</label>
+                            <input type="text" class="form-control" id="teknisi" name="teknisi"
+                                placeholder="Nama Teknisi">
+                        </div>
+
+                        <!-- Indikasi -->
+                        <div class="col-md-4">
+                            <label for="indikasi" class="form-label">Indikasi</label>
+                            <input type="text" class="form-control" id="indikasi" name="indikasi"
+                                placeholder="Indikasi masalah">
+                        </div>
+
+                        <!-- Tindakan -->
+                        <div class="col-md-4">
+                            <label for="tindakan" class="form-label">Tindakan</label>
+                            <input type="text" class="form-control" id="tindakan" name="tindakan"
+                                placeholder="Tindakan perbaikan">
+                        </div>
+
+                        <!-- File Uploads -->
+                        <div class="col-md-6">
+                            <label for="before" class="form-label">Before</label>
+                            <input type="file" class="form-control" id="before" name="before" accept=".jpg,.jpeg,">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="after" class="form-label">After</label>
+                            <input type="file" class="form-control" id="after" name="after" accept=".jpg,.jpeg,">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="serial_number" class="form-label">Serial Number</label>
+                            <input type="file" class="form-control" id="serial_number" name="serial_number"
+                                accept=".jpg,.jpeg,.pdf">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="lokasi" class="form-label">Lokasi</label>
+                            <input type="file" class="form-control" id="lokasi" name="lokasi" accept=".jpg,.jpeg,">
+                        </div>
+
+                    </div>
+
+                    <div class="mt-4 text-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-1"></i> Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
