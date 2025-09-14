@@ -17,16 +17,18 @@ PUBLIC_DIR.mkdir(exist_ok=True)
 
 TEMPLATES_DIR = SRC_DIR / "templates"
 
+
+load_dotenv(ROOT_DIR / ".env", override=False)
+
+
 APP_ENV = os.getenv("APP_ENV", "development")
 
-# pilih file env sesuai APP_ENV
-if APP_ENV == "production":
-    env_file = ROOT_DIR / ".env.prod"
-else:
-    env_file = ROOT_DIR / ".env"
 
-# load file env yang sesuai
-load_dotenv(env_file)
+if APP_ENV == "production":
+    load_dotenv(ROOT_DIR / ".env.prod", override=True)
+else:
+    load_dotenv(ROOT_DIR / ".env", override=True)
+
 TOKEN = os.getenv("TOKEN")
 GROUP_ID = os.getenv("GROUP_ID")
 class BaseConfig:
