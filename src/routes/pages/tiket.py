@@ -66,6 +66,7 @@ async def ticket_create(
 ):
     
 
+    
     BASE_URL = "http://103.191.92.250:8000/public"
 
     def file_url(filename: str) -> str:
@@ -100,8 +101,25 @@ async def ticket_create(
     db.commit()
     db.refresh(ticket)
 
-    # Pesan WhatsApp untuk file pertama
-    message = f"""Tiket baru berhasil dibuat!
+    # List file beserta label
+    files = [
+        ("Before", before_name),
+        ("After", after_name),
+        ("Serial Number", serial_name),
+        ("Lokasi", lokasi_name),
+    ]
+
+    headers = {"Authorization": f"{TOKEN}"}
+
+    async with httpx.AsyncClient() as client:
+        for idx, (label, filename) in enumerate(files):
+            if not filename:
+                continue
+
+            # Pesan berbeda untuk file pertama vs berikutnya
+            if idx == 0:
+                # Full ticket message + label foto
+                message = f"""Tiket baru berhasil dibuat!
 No Tiket: {ticket.no_tiket}
 Customer: {ticket.customer}
 Tanggal: {ticket.tanggal}
@@ -112,21 +130,16 @@ Indikasi: {ticket.indikasi}
 Tindakan: {ticket.tindakan}
 Lokasi Koor: {ticket.lokasi_koordinat}
 
-Pesan ini dikirim otomatis"""
+Foto untuk: {label}"""
+            else:
+                # Minimal message: tiket + nama file
+                message = f"Tiket: {ticket.no_tiket}\nFoto untuk: {label}"
 
-    files = [before_name, after_name, serial_name, lokasi_name]
-    headers = {"Authorization": f"{TOKEN}"}
-
-    async with httpx.AsyncClient() as client:
-        for idx, filename in enumerate(files):
-            if not filename:
-                continue
-
-            payload = {"target": GROUP_ID, "url": file_url(filename)}
-
-            # Hanya file pertama yang dikirim beserta message
-            if idx == 0:
-                payload["message"] = message
+            payload = {
+                "target": GROUP_ID,
+                "url": file_url(filename),
+                "message": message
+            }
 
             try:
                 response = await client.post(
@@ -135,14 +148,15 @@ Pesan ini dikirim otomatis"""
                     headers=headers
                 )
                 res_json = response.json()
-                print(f"✅ Response Fonnte ({filename}):", res_json)
+                print(f"✅ Response Fonnte ({label}):", res_json)
             except Exception as e:
-                print(f"❌ Error kirim Fonnte ({filename}):", str(e))
+                print(f"❌ Error kirim Fonnte ({label}):", str(e))
 
     return RedirectResponse(
         url=router.url_path_for("tiket"),
         status_code=status.HTTP_303_SEE_OTHER,
     )
+
 
 
 
