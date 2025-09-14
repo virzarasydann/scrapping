@@ -45,7 +45,7 @@ def save_upload_file(file: UploadFile | None) -> str | None:
 
 def file_url(filename):
     if APP_ENV == "production" and filename:
-        return f"http://103.191.92.250:8000/public//public/{filename}"
+        return f"http://103.191.92.250:8000/public/{filename}"
     return ""
 
 # ------------ GET semua tiket ------------
