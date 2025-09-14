@@ -25,7 +25,7 @@
                         <!-- Tanggal -->
                         <div class="col-md-4">
                             <label for="tgl" class="form-label">Tanggal</label>
-                            <input type="date" class="form-control" id="tanggal" name="tanggal" required>
+                            <input type="date" class="form-control" id="tanggal" name="tanggal" value="{{ current_time }}" required>
                         </div>
 
                         <!-- No Tiket -->
@@ -65,44 +65,50 @@
                         <!-- Indikasi -->
                         <div class="col-md-4">
                             <label for="indikasi" class="form-label">Indikasi</label>
-                            <input type="text" class="form-control" id="indikasi" name="indikasi"
-                                placeholder="Indikasi masalah">
+                            
+                            <textarea class="form-control" id="indikasi" name="indikasi" rows="2" placeholder="Indikasi Masalah"></textarea>
                         </div>
 
                         <!-- Tindakan -->
                         <div class="col-md-4">
                             <label for="tindakan" class="form-label">Tindakan</label>
-                            <input type="text" class="form-control" id="tindakan" name="tindakan"
-                                placeholder="Tindakan perbaikan">
+                            <textarea class="form-control" id="tindakan" name="tindakan" rows="2" placeholder="Tindakan Perbaikan"></textarea>
                         </div>
 
                         <!-- File Uploads -->
+                        <!-- File Uploads dengan preview -->
+                        <!-- File Uploads dengan preview -->
                         <div class="col-md-6">
                             <label for="before" class="form-label">Before</label>
-                            <input type="file" class="form-control" id="before" name="before" accept=".jpg,.jpeg,">
+                            <input type="file" class="form-control file-input" id="before" name="before" accept=".jpg,.jpeg">
+                            <div class="file-preview" id="before_preview"></div>
                         </div>
-
+                        
                         <div class="col-md-6">
                             <label for="after" class="form-label">After</label>
-                            <input type="file" class="form-control" id="after" name="after" accept=".jpg,.jpeg,">
+                            <input type="file" class="form-control file-input" id="after" name="after" accept=".jpg,.jpeg">
+                            <div class="file-preview" id="after_preview"></div>
                         </div>
-
+                        
                         <div class="col-md-6">
                             <label for="serial_number" class="form-label">Serial Number</label>
-                            <input type="file" class="form-control" id="serial_number" name="serial_number"
-                                accept=".jpg,.jpeg,.pdf">
+                            <input type="file" class="form-control file-input" id="serial_number" name="serial_number" accept=".jpg,.jpeg,.pdf">
+                            <div class="file-preview" id="serial_number_preview"></div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="lokasi_file" class="form-label">Lokasi</label>
+                            <input type="file" class="form-control file-input" id="lokasi_file" name="lokasi" accept=".jpg,.jpeg">
+                            <div class="file-preview" id="lokasi_file_preview"></div>
                         </div>
 
-                        <div class="col-md-6">
-                            <label for="lokasi" class="form-label">Lokasi</label>
-                            <input type="file" class="form-control" id="lokasi" name="lokasi" accept=".jpg,.jpeg,">
-                        </div>
+
 
                         <!-- Lokasi -->
                         <div class="col-md-6">
                             <label for="lokasi" class="form-label">Lokasi</label>
                             <div class="input-group">
-                                <input type="text" class="form-control" id="lokasi_koor" name="lokasi_koor" placeholder="Klik tombol untuk ambil lokasi"
+                                <input type="text" class="form-control" id="lokasi_koordinat" name="lokasi_koordinat" placeholder="Klik tombol untuk ambil lokasi"
                                     readonly>
                                 <button type="button" class="btn btn-outline-primary" onclick="getLocation()">
                                     Ambil Lokasi
@@ -127,13 +133,60 @@
 </div>
 
 <script>
+    document.querySelectorAll('.file-input').forEach(input => {
+            input.addEventListener('change', function () {
+                if (this.files.length === 0) return;
+
+                const file = this.files[0];
+                const parent = this.parentElement;
+                const inputId = this.id;
+
+                
+                this.style.display = 'none';
+
+                
+                let btnContainer = document.createElement('div');
+                btnContainer.className = 'mt-2 d-flex gap-2';
+                btnContainer.id = inputId + '_btns';
+
+                
+                let previewBtn = document.createElement('button');
+                previewBtn.type = 'button';
+                previewBtn.className = 'btn btn-sm btn-primary';
+                previewBtn.textContent = 'Preview';
+                previewBtn.onclick = () => {
+                    if (file.type.startsWith('image/')) {
+                        const imgWindow = window.open('');
+                        imgWindow.document.write(`<img src="${URL.createObjectURL(file)}" style="max-width:100%;">`);
+                    } else {
+                        alert('Preview hanya untuk gambar.');
+                    }
+                };
+
+                // Tombol Hapus
+                let removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'btn btn-sm btn-danger';
+                removeBtn.textContent = 'Hapus';
+                removeBtn.onclick = () => {
+                    input.value = ''; 
+                    input.style.display = 'block'; 
+                    btnContainer.remove(); 
+                };
+
+                btnContainer.appendChild(previewBtn);
+                btnContainer.appendChild(removeBtn);
+
+                parent.appendChild(btnContainer);
+            });
+        });
    function getLocation() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 function (position) {
                     const lat = position.coords.latitude;
                     const lon = position.coords.longitude;
-                    document.getElementById("lokasi_koor").value = `${lat},${lon}`;
+                    document.getElementById("lokasi_koordinat").value = `${lat},${lon}`;
                 },
                 function (error) {
                     let msg;

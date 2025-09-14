@@ -20,6 +20,7 @@ class Ticket(Base):
     before = Column(String(512), nullable=True)                       
     after = Column(String(512), nullable=True)                        
     serial_number = Column(String(255), nullable=True)                
-    lokasi = Column(String(255), nullable=True)                       
+    lokasi = Column(String(255), nullable=True)
+    lokasi_koordinat = Column(String(255), nullable=True)                        
 
     

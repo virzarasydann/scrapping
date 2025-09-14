@@ -10,6 +10,7 @@ class TicketCreate(BaseModel):
     teknisi: str | None = None
     indikasi: str | None = None
     tindakan: str | None = None
+    lokasi_koordinat: str | None = None
 
     @classmethod
     def as_form(
@@ -22,6 +23,7 @@ class TicketCreate(BaseModel):
         teknisi: str = Form(None),
         indikasi: str = Form(None),
         tindakan: str = Form(None),
+        lokasi_koordinat: str = Form(None),
     ):
         return cls(
             tanggal=tanggal,
@@ -32,4 +34,5 @@ class TicketCreate(BaseModel):
             teknisi=teknisi,
             indikasi=indikasi,
             tindakan=tindakan,
+            lokasi_koordinat=lokasi_koordinat
         )

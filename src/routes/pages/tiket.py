@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
-from src.configuration.config import SRC_DIR,GROUP_ID,TOKEN
+from src.configuration.config import SRC_DIR,GROUP_ID,TOKEN, APP_ENV
 from src.configuration.database import get_db
 from src.models.ticket_models import Ticket
 from src.schemas.ticket import TicketCreate
@@ -43,6 +43,10 @@ def save_upload_file(file: UploadFile | None) -> str | None:
 
     return filename
 
+def file_url(filename):
+    if APP_ENV == "production" and filename:
+        return f"/public/{filename}"
+    return ""
 
 # ------------ GET semua tiket ------------
 @router.get("", response_class=HTMLResponse, name="tiket")
@@ -77,6 +81,7 @@ async def ticket_create(
         teknisi=data.teknisi,
         indikasi=data.indikasi,
         tindakan=data.tindakan,
+        lokasi_koordinat=data.lokasi_koordinat,
         before=before_name,
         after=after_name,
         serial_number=serial_name,
@@ -87,13 +92,35 @@ async def ticket_create(
     db.commit()
     db.refresh(ticket)
 
+    message = f"""Tiket baru berhasil dibuat!
+No Tiket: {ticket.no_tiket}
+Customer: {ticket.customer}
+Tanggal: {ticket.tanggal}
+Model: {ticket.model}
+Keluhan: {ticket.keluhan}
+Teknisi: {ticket.teknisi}
+Indikasi: {ticket.indikasi}
+Tindakan: {ticket.tindakan}
+Lokasi Koor: {ticket.lokasi_koordinat}
+
+Pesan ini dikirim otomatis"""
+
+    file_urls = ",".join(
+        url for url in [
+            file_url(before_name),
+            file_url(after_name),
+            file_url(serial_name),
+            file_url(lokasi_name)
+        ] if url  # hanya ambil yang ada
+    )
+
     # public_url = f"http://103.191.92.250:8000/public/"
 
     async with httpx.AsyncClient() as client:
         payload = {
             "target": f"{GROUP_ID}",  
-            "message": f"Tiket baru berhasil dibuat!\nNo Tiket: {ticket.no_tiket}\nCustomer: {ticket.customer}\nKeluhan: {ticket.keluhan}\nTeknisi: {ticket.teknisi}\nPesan ini dikirim otomatis",
-            "url": "",
+            "message": f"{message}",
+            "url": file_urls,
             "filename": "",
             "schedule": "",
             "delay": "2",
