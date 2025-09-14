@@ -64,8 +64,12 @@ async def ticket_create(
     lokasi: UploadFile = File(None),
     db: Session = Depends(get_db),
 ):
+    import os
+    import httpx
+    import json
+
     
-    BASE_URL = "http://103.191.92.250:8000/public"  # ganti sesuai domain/public Anda
+    BASE_URL = "http://103.191.92.250:8000/public"
 
     def file_url(filename: str) -> str:
         if APP_ENV == "production" and filename:
@@ -113,44 +117,38 @@ Lokasi Koor: {ticket.lokasi_koordinat}
 
 Pesan ini dikirim otomatis"""
 
-    # Loop hanya untuk URL file, gabungkan menjadi satu string
-    file_urls = ",".join(
-        url for url in [
-            file_url(before_name),
-            file_url(after_name),
-            file_url(serial_name),
-            file_url(lokasi_name)
-        ] if url  # hanya ambil yang ada
-    )
-
+    
+    files = [before_name, after_name, serial_name, lokasi_name]
     headers = {"Authorization": f"{TOKEN}"}
 
-    # Kirim satu payload saja
     async with httpx.AsyncClient() as client:
-        payload = {
-            "target": f"{GROUP_ID}",
-            "message": message,
-            "url": file_urls,  # gabungan URL file
-            "filename": "",    # bisa dikosongkan atau sesuai kebutuhan
-            "schedule": "",
-            "delay": "2",
-            "countryCode": "62",
-        }
-        try:
-            response = await client.post(
-                "https://api.fonnte.com/send",
-                data=payload,
-                headers=headers
-            )
-            res_json = response.json()
-            print("✅ Response Fonnte:", res_json)
-        except Exception as e:
-            print("❌ Error kirim Fonnte:", str(e))
+        for filename in files:
+            if not filename:
+                continue
+
+            payload_json = {
+                
+                "url": file_url(filename)  # URL publik lengkap atau kosong di dev
+            }
+
+            payload = {"target": GROUP_ID,"message":message ,"templateJSON": json.dumps(payload_json)}
+
+            try:
+                response = await client.post(
+                    "https://api.fonnte.com/send",
+                    data=payload,
+                    headers=headers
+                )
+                res_json = response.json()
+                print(f"✅ Response Fonnte ({filename}):", res_json)
+            except Exception as e:
+                print(f"❌ Error kirim Fonnte ({filename}):", str(e))
 
     return RedirectResponse(
         url=router.url_path_for("tiket"),
         status_code=status.HTTP_303_SEE_OTHER,
     )
+
 
 
 
