@@ -58,7 +58,7 @@ async def ticket_list(request: Request, db: Session = Depends(get_db)):
 
 
 # ------------ POST tiket baru ------------
-@router.post("", name="ticket_post")
+@@router.post("", name="ticket_post")
 async def ticket_create(
     data: TicketCreate = Depends(TicketCreate.as_form),
     before: UploadFile = File(None),
@@ -67,11 +67,21 @@ async def ticket_create(
     lokasi: UploadFile = File(None),
     db: Session = Depends(get_db),
 ):
+   
+    BASE_URL = "http://103.191.92.250:8000/public"  
+
+    def file_url(filename: str) -> str:
+        if APP_ENV == "production" and filename:
+            return f"{BASE_URL}/{filename}"
+        return ""
+
+    
     before_name = save_upload_file(before)
     after_name = save_upload_file(after)
     serial_name = save_upload_file(serial_number)
     lokasi_name = save_upload_file(lokasi)
 
+    
     ticket = Ticket(
         tanggal=data.tanggal,
         no_tiket=data.no_tiket,
@@ -92,6 +102,7 @@ async def ticket_create(
     db.commit()
     db.refresh(ticket)
 
+    
     message = f"""Tiket baru berhasil dibuat!
 No Tiket: {ticket.no_tiket}
 Customer: {ticket.customer}
@@ -105,38 +116,46 @@ Lokasi Koor: {ticket.lokasi_koordinat}
 
 Pesan ini dikirim otomatis"""
 
-    file_urls = ",".join(
-        url for url in [
-            file_url(before_name),
-            file_url(after_name),
-            file_url(serial_name),
-            file_url(lokasi_name)
-        ] if url  # hanya ambil yang ada
-    )
+   
+    files = [
+        ("before", before_name),
+        ("after", after_name),
+        ("serial_number", serial_name),
+        ("lokasi", lokasi_name),
+    ]
 
-    # public_url = f"http://103.191.92.250:8000/public/"
+    headers = {"Authorization": f"{TOKEN}"}
 
     async with httpx.AsyncClient() as client:
-        payload = {
-            "target": f"{GROUP_ID}",  
-            "message": f"{message}",
-            "url": file_urls,
-            "filename": "",
-            "schedule": "",
-            "delay": "2",
-            "countryCode": "62",
-        }
-        headers = {"Authorization": f"{TOKEN}"}
-        try:
-            response = await client.post("https://api.fonnte.com/send", data=payload, headers=headers)
-            res_json = response.json()
-            print("✅ Response Fonnte:", res_json)
-        except Exception as e:
-            print("❌ Error kirim Fonnte:", str(e))
+        for field, filename in files:
+            if not filename:
+                continue  # skip jika tidak ada file
 
-    # ✅ redirect ke route bernama "tiket"
+            payload = {
+                "target": f"{GROUP_ID}",
+                "message": message,
+                "url": file_url(filename),  
+                "filename": filename,
+                "schedule": "",
+                "delay": "2",
+                "countryCode": "62",
+            }
+
+            try:
+                response = await client.post(
+                    "https://api.fonnte.com/send",
+                    data=payload,
+                    headers=headers
+                )
+                res_json = response.json()
+                print(f"✅ Response Fonnte ({filename}):", res_json)
+            except Exception as e:
+                print(f"❌ Error kirim Fonnte ({filename}):", str(e))
+
+    # Redirect ke route bernama "tiket"
     return RedirectResponse(
         url=router.url_path_for("tiket"),
         status_code=status.HTTP_303_SEE_OTHER,
     )
+
 
