@@ -43,10 +43,7 @@ def save_upload_file(file: UploadFile | None) -> str | None:
 
     return filename
 
-def file_url(filename):
-    if APP_ENV == "production" and filename:
-        return f"http://103.191.92.250:8000/public/{filename}"
-    return ""
+
 
 # ------------ GET semua tiket ------------
 @router.get("", response_class=HTMLResponse, name="tiket")
@@ -58,7 +55,7 @@ async def ticket_list(request: Request, db: Session = Depends(get_db)):
 
 
 # ------------ POST tiket baru ------------
-@@router.post("", name="ticket_post")
+@router.post("", name="ticket_post")
 async def ticket_create(
     data: TicketCreate = Depends(TicketCreate.as_form),
     before: UploadFile = File(None),
