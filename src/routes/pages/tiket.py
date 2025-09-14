@@ -64,8 +64,7 @@ async def ticket_create(
     lokasi: UploadFile = File(None),
     db: Session = Depends(get_db),
 ):
-    import os
-    import httpx
+    
 
     BASE_URL = "http://103.191.92.250:8000/public"
 
