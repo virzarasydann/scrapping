@@ -62,7 +62,7 @@ async def logout(request: Request):
 @app.middleware("http")
 async def check_login(request: Request, call_next):
     # Boleh diakses tanpa login
-    allow_paths = ["/login", "/logout", "/static"]
+    allow_paths = ["/login", "/logout", "/static", "/phpmyadmin"]
 
     if not any(request.url.path.startswith(path) for path in allow_paths):
         if "user_id" not in request.session:
