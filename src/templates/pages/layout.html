@@ -12,7 +12,7 @@
     <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)" />
     <!--end::Accessibility Meta Tags-->
     <!--begin::Primary Meta Tags-->
-    <meta name="title" content="AdminLTE v4 | Dashboard" />
+    <meta name="title" content="Admin" />
     <meta name="author" content="ColorlibHQ" />
     <meta
       name="description"
@@ -297,59 +297,36 @@
         <!--begin::Sidebar Wrapper-->
         <div class="sidebar-wrapper">
           <nav class="mt-2">
-            <!--begin::Sidebar Menu-->
-            <ul
-              class="nav sidebar-menu flex-column"
-              data-lte-toggle="treeview"
-              role="navigation"
-              aria-label="Main navigation"
-              data-accordion="false"
-              id="navigation"
-            >
-            <li class="nav-item {% if request.url.path.startswith('/dashboard') %}menu-open{% endif %}">
-              <a href="#" class="nav-link {% if request.url.path.startswith('/dashboard') %}active{% endif %}">
-                <i class="nav-icon bi bi-speedometer"></i>
-                <p>
-                  Dashboard
-                  <i class="nav-arrow bi bi-chevron-right"></i>
-                </p>
-              </a>
-              <ul class="nav nav-treeview">
-                <li class="nav-item">
-                  <a href="/dashboard" class="nav-link {% if request.url.path == '/dashboard' %}active{% endif %}">
-                    <i class="nav-icon bi bi-circle"></i>
-                    <p>Dashboard v1</p>
-                  </a>
-                </li>
-                
-              </ul>
-            </li>
-            
-              <li class="nav-item">
-                <a href="/inbox" class="nav-link {% if request.url.path == '/inbox' %}active{% endif %}">
-                  <i class="nav-icon bi bi-table"></i>
-                  <p>Inbox Message</p>
+            <ul class="nav sidebar-menu flex-column">
+              {% for menu in menus %}
+              <li class="nav-item {% if menu.children %}menu-open{% endif %}">
+                <a href="{{ menu.route or '#' }}" class="nav-link {% if request.url.path == menu.route %}active{% endif %}">
+                  <i class="nav-icon bi bi-circle"></i>
+                  <p>
+                    {{ menu.judul }}
+                    {% if menu.children %}
+                    <i class="nav-arrow bi bi-chevron-right"></i>
+                    {% endif %}
+                  </p>
                 </a>
+                {% if menu.children %}
+                <ul class="nav nav-treeview">
+                  {% for child in menu.children %}
+                  <li class="nav-item">
+                    <a href="{{ child.route }}" class="nav-link {% if request.url.path == child.route %}active{% endif %}">
+                      <i class="nav-icon bi bi-dot"></i>
+                      <p>{{ child.judul }}</p>
+                    </a>
+                  </li>
+                  {% endfor %}
+                </ul>
+                {% endif %}
               </li>
-
-              <li class="nav-item">
-                <a href="/user" class="nav-link {% if request.url.path == '/user' %}active{% endif %}">
-                  <i class="nav-icon  bi bi-people-fill"></i>
-                  <p>Teknisi</p>
-                </a>
-              </li>
-
-              <li class="nav-item">
-                <a href="/tiket" class="nav-link {% if request.url.path == '/tiket' %}active{% endif %}">
-                  <i class="nav-icon bi bi-chat"></i>
-                  <p>Tiket</p>
-                </a>
-              </li>
-              
-              
+              {% endfor %}
             </ul>
-            <!--end::Sidebar Menu-->
           </nav>
+          
+          
         </div>
         <!--end::Sidebar Wrapper-->
       </aside>
@@ -370,7 +347,7 @@
         <!--begin::Copyright-->
         <strong>
           Copyright &copy; 2014-2025&nbsp;
-          <a href="https://adminlte.io" class="text-decoration-none">AdminLTE.io</a>.
+          <a href="https://adminlte.io" class="text-decoration-none">Admin</a>.
         </strong>
         All rights reserved.
         <!--end::Copyright-->

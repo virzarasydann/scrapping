@@ -12,9 +12,9 @@ from src.models.ticket_models import Ticket
 from src.schemas.ticket import TicketCreate
 import uuid
 import httpx
-
+from src.services.template_service import templates
 router = APIRouter(prefix="/tiket", tags=["Tickets"])
-templates = Jinja2Templates(directory=SRC_DIR / "templates" / "pages")
+# templates = Jinja2Templates(directory=SRC_DIR / "templates" / "pages")
 
 PUBLIC_DIR = SRC_DIR / "public"
 os.makedirs(PUBLIC_DIR, exist_ok=True)

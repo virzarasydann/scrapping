@@ -7,8 +7,9 @@ from src.configuration.database import get_db
 from sqlalchemy.orm import Session
 from src.models.files_models import File
 from datetime import date
+from src.services.template_service import templates
 router = APIRouter(prefix="/form", tags=["Pages"])
-templates = Jinja2Templates(directory=SRC_DIR / "templates" / "pages")
+# templates = Jinja2Templates(directory=SRC_DIR / "templates" / "pages")
 
 
 @router.get("", response_class=HTMLResponse, name="form")

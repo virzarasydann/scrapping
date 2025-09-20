@@ -1,0 +1,196 @@
+{% extends "layout.html" %}
+
+{% block title %}Data Tables{% endblock %}
+
+{% block content %}
+<div class="app-content-header">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+        <h3 class="mb-3">Data Tables Teknisi</h3>
+        <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#teknisiModal" data-mode="create">
+            <i class="bi bi-plus-circle"></i> Tambah Teknisi
+        </button>
+
+    </div>
+</div>
+
+<div class="app-content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title">User List</h3>
+            </div>
+            <div class="card-body">
+                <table id="example" class="table table-striped table-bordered" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>No HP</th>
+                            
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for msg in messages %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ msg.nomer or "Tidak ada Nomer" }}</td>
+                            <!-- <td>{{ msg.nama or "Tidak ada Nama"}}</td> -->
+                            <td>
+                                <!-- <a href="/user/search?nomer_user={{ msg.nomer }}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-eye"></i> Detail
+                                </a> -->
+                                <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#teknisiModal" data-mode="edit"
+                                    data-id="{{ msg.id }}" data-nomer="{{ msg.nomer }}">
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                </button>
+                        
+                                <button type="button" class="btn btn-sm btn-danger btn-delete" data-id="{{ msg.id }}">
+                                    <i class="bi bi-trash"></i> Hapus
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tambah Teknisi -->
+<<!-- Modal Teknisinya cuma 1 -->
+<div class="modal fade" id="teknisiModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="teknisiForm" action="{{ url_for('user_post') }}" method="post">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalTitle">Tambah Teknisi</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="id_user" name="id_user">
+            <div class="mb-3">
+              <label for="nomer" class="form-label">Nomer HP</label>
+              <input type="text" class="form-control" id="nomer" name="nomer" >
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label">Password</label>
+              <input type="text" class="form-control" id="password" name="password" >
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-success" id="btnSubmit">Simpan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+
+<style>
+    /* Styling untuk memperbaiki tampilan modal */
+    .modal-backdrop {
+        background-color: rgba(0, 0, 0, 0.5) !important;
+        opacity: 1 !important;
+    }
+
+    .modal-content {
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        border: none;
+    }
+
+    .modal-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        padding: 1rem;
+    }
+
+    .modal-title {
+        color: #198754;
+        font-weight: 600;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #dee2e6;
+        padding: 1rem 1.5rem;
+    }
+
+    .btn-close {
+        background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat;
+    }
+</style>
+
+<script>
+    document.getElementById('teknisiModal').addEventListener('show.bs.modal', function (event) {
+        let button = event.relatedTarget;
+        let mode = button.getAttribute('data-mode');
+
+        let modalTitle = this.querySelector('#modalTitle');
+        let btnSubmit = this.querySelector('#btnSubmit');
+        let idField = this.querySelector('#id_user');
+        let nomerField = this.querySelector('#nomer');
+        let passwordField = this.querySelector('#password');
+
+        if (mode === 'edit') {
+            modalTitle.textContent = 'Edit Teknisi';
+            btnSubmit.textContent = 'Update';
+            idField.value = button.getAttribute('data-id');
+            nomerField.value = button.getAttribute('data-nomer');
+            
+        } else {
+            modalTitle.textContent = 'Tambah Teknisi';
+            btnSubmit.textContent = 'Simpan';
+            
+            idField.value = '';
+            nomerField.value = '';
+            passwordField.value = '';
+        }
+        console.log(idField)
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll('.btn-delete').forEach(button => {
+            button.addEventListener('click', function () {
+                let userId = this.getAttribute('data-id');
+
+                Swal.fire({
+                    title: 'Yakin hapus data ini?',
+                    text: "Data yang dihapus tidak bisa dikembalikan!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`/user/${userId}`, {
+                            method: 'DELETE'
+                        }).then(response => {
+                            if (response.ok) {
+                                Swal.fire('Terhapus!', 'Data berhasil dihapus.', 'success')
+                                    .then(() => location.reload());
+                            } else {
+                                Swal.fire('Gagal!', 'Terjadi error saat menghapus.', 'error');
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    });
+</script>
+
+{% endblock %}
