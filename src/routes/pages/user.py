@@ -103,9 +103,16 @@ async def delete_user(user_id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         return JSONResponse(status_code=404, content={"message": "User tidak ditemukan"})
+
+    # Hapus semua hak akses user ini
+    db.query(HakAkses).filter(HakAkses.id_user == user_id).delete(synchronize_session=False)
+
+    # Hapus user
     db.delete(user)
     db.commit()
-    return JSONResponse(status_code=200, content={"message": "User berhasil dihapus"})
+
+    return JSONResponse(status_code=200, content={"message": "User dan hak akses terkait berhasil dihapus"})
+
 
 
 
