@@ -176,17 +176,17 @@
                     cancelButtonText: 'Batal'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        fetch(`/user/admin?user_id=${userId}`, {
-                            method: 'DELETE'
-                        }).then(response => {
-                            console.log(response)
-                            if (response.ok) {
-                                Swal.fire('Terhapus!', 'Data berhasil dihapus.', 'success')
+                        fetch(`/user/admin?user_id=${userId}`, { method: 'DELETE' })
+                            .then(resp => resp.json())
+                            .then(data => {
+                                Swal.fire('Terhapus!', data.message, 'success')
                                     .then(() => location.reload());
-                            } else {
+                            })
+                            .catch(err => {
+                                console.error(err)
                                 Swal.fire('Gagal!', 'Terjadi error saat menghapus.', 'error');
-                            }
-                        });
+                            });
+
                     }
                 });
             });
