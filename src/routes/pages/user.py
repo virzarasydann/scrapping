@@ -14,8 +14,8 @@ from sqlalchemy.orm import load_only
 from src.services.template_service import templates
 import bcrypt
 from typing import Optional
-
-router = APIRouter(prefix="/user", tags=["Pages"])
+from sqlalchemy.exc import SQLAlchemyError
+router = APIRouter(prefix="/user", tags=["User"])
 # templates = Jinja2Templates(directory=SRC_DIR / "templates" / "pages")
 
 
@@ -78,7 +78,7 @@ async def create_or_update_user_in_admin(
         db.refresh(new_user)
 
         
-        menus = db.query(Menu.id).filter(Menu.is_admin == False).all()
+        menus = db.query(Menu.id).filter(Menu.is_admin == False, Menu.route != "#").all()
         for menu in menus:
             hak = HakAkses(
                 id_user=new_user.id,
@@ -98,21 +98,19 @@ async def create_or_update_user_in_admin(
     )
 
 
-@router.delete("/{user_id}", name="user_delete")
-async def delete_user(user_id: int, db: Session = Depends(get_db)):
+@router.delete("/admin", name="user_delete")
+async def delete_user(request: Request, user_id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        return JSONResponse(
-            status_code=404,
-            content={"message": "User tidak ditemukan"}
-        )
-
+        return JSONResponse(status_code=404, content={"message": "User tidak ditemukan"})
     db.delete(user)
     db.commit()
-    return JSONResponse(
-        status_code=200,
-        content={"message": "User berhasil dihapus"}
+    return RedirectResponse(
+        url=request.url_for("user_list_admin"),
+        status_code=status.HTTP_303_SEE_OTHER
     )
+
+
 
 @router.get("/search",response_class=HTMLResponse)
 async def detail_listener(

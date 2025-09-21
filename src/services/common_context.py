@@ -2,7 +2,7 @@ from sqlalchemy.orm import joinedload
 from src.configuration.database import SessionLocal
 from src.models.menu_models import Menu
 from src.models.hak_akses_models import HakAkses
-from src.services.sessions_utils import get_user_id, get_role_id
+from src.services.sessions_utils import get_user_id, get_role_id, get_username
 from fastapi import Request
 
 def build_menu_tree(menus):
@@ -29,7 +29,7 @@ def common_context(request: Request):
         return {"menus": [], "request": request}
 
     role = get_role_id(request)
-
+    username = get_username(request)
   
     menus = (
         db.query(Menu)
@@ -40,4 +40,4 @@ def common_context(request: Request):
     )
 
     db.close()
-    return {"menus": build_menu_tree(menus), "request": request}
+    return {"menus": build_menu_tree(menus), "request": request, "username": username, "role": role}

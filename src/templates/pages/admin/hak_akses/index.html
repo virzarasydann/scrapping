@@ -1,0 +1,93 @@
+{% extends "layout.html" %}
+
+{% block title %}Hak Akses{% endblock %}
+
+{% block content %}
+<div class="app-content-header">
+    <div class="container-fluid">
+        <h3 class="mb-3">Manajemen Hak Akses</h3>
+    </div>
+</div>
+
+<div class="app-content">
+    <div class="container-fluid">
+
+        <!-- Dropdown pilih user -->
+        <div class="mb-3">
+            <label for="userSelect" class="form-label">Pilih User</label>
+            <select id="userSelect" class="form-select">
+                <option value="">-- Pilih User --</option>
+                {% for user in users %}
+                <option value="{{ user.id }}">{{ user.nomer }} ({{ user.role }})</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Hak akses akan muncul setelah user dipilih -->
+        <div id="hakAksesContainer" style="display:none;">
+            <form action="/hak_akses/save_hak_akses" method="post" id="hakAksesForm">
+                <input type="hidden" name="user_id" id="user_id" value="">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Menu</th>
+                            <th>Lihat</th>
+                            <th>Tambah</th>
+                            <th>Update</th>
+                            <th>Hapus</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for menu in menu_hak_akses %}
+                        <tr>
+                            
+                            <td>{{ menu.judul }}</td>
+                            <td><input type="checkbox" name="akses[{{ menu.id }}][lihat]"></td>
+                            <td><input type="checkbox" name="akses[{{ menu.id }}][tambah]"></td>
+                            <td><input type="checkbox" name="akses[{{ menu.id }}][update_data]"></td>
+                            <td><input type="checkbox" name="akses[{{ menu.id }}][hapus]"></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <button type="submit" class="btn btn-primary">Simpan Hak Akses</button>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    document.getElementById("userSelect").addEventListener("change", function () {
+        const userId = this.value;
+        
+        console.log(userId)
+        if (!userId) {
+            document.getElementById("hakAksesContainer").style.display = "none";
+            return;
+        }
+        $("#user_id").val(userId);
+        
+        
+        document.getElementById("hakAksesContainer").style.display = "block";
+
+        // Load hak akses user via AJAX
+        fetch(`/hak_akses/get_hak_akses?user_id=${userId}`)
+            .then(resp => resp.json())
+            .then(data => {
+                console.log(data)
+                // Reset semua checkbox
+                document.querySelectorAll("#hakAksesForm input[type=checkbox]").forEach(cb => cb.checked = false);
+
+                // Centang sesuai data dari server
+                data.forEach(akses => {
+                    if (akses.lihat) document.querySelector(`[name="akses[${akses.id_menu}][lihat]"]`).checked = true;
+                    if (akses.tambah) document.querySelector(`[name="akses[${akses.id_menu}][tambah]"]`).checked = true;
+                    if (akses.update_data) document.querySelector(`[name="akses[${akses.id_menu}][update_data]"]`).checked = true;
+                    if (akses.hapus) document.querySelector(`[name="akses[${akses.id_menu}][hapus]"]`).checked = true;
+                });
+            });
+    });
+</script>
+{% endblock %}

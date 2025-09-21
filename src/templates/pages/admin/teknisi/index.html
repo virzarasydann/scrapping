@@ -176,9 +176,10 @@
                     cancelButtonText: 'Batal'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        fetch(`/user/${userId}`, {
+                        fetch(`/user/admin?user_id=${userId}`, {
                             method: 'DELETE'
                         }).then(response => {
+                            console.log(response)
                             if (response.ok) {
                                 Swal.fire('Terhapus!', 'Data berhasil dihapus.', 'success')
                                     .then(() => location.reload());

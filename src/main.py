@@ -12,6 +12,14 @@ from starlette.middleware.sessions import SessionMiddleware
 from src.routes.api import webhook
 from src.routes import api_routers, page_routers
 from src.services.sessions_utils import clear_session
+from src.models.menu_models import Menu
+from src.models.hak_akses_models import HakAkses
+from src.configuration.database import SessionLocal
+from sqlalchemy import or_
+from sqlalchemy.orm import Session
+from src.models.user_models import User
+from sqlalchemy import func
+from sqlalchemy import literal
 logger = setup_logging()
 
 print(APP_ENV)
@@ -58,17 +66,109 @@ async def health_check():
 @app.get("/logout")
 async def logout(request: Request):
     clear_session(request)
-    return {"status": "success"}
+    return RedirectResponse(url="/login")
+
+# @app.middleware("http")
+# async def check_login(request: Request, call_next):
+#     # Daftar path yang boleh dilewati tanpa cek hak akses
+#     allow_paths = ["/login", "/logout", "/static", "/.well-known",  "/user/delete", "/docs#"]
+
+#     path = request.url.path.rstrip("/")  # normalisasi trailing slash
+
+#     # Jika path termasuk yang dilewati, langsung lanjut
+#     if any(path.startswith(p) for p in allow_paths):
+#         return await call_next(request)
+
+#     # Ambil user dari session
+#     user_id = request.session.get("user_id")
+#     if not user_id:
+#         return RedirectResponse(url="/login", status_code=303)
+
+#     # Cek hak akses user
+#     db: Session = SessionLocal()
+#     try:
+#         allowed = (
+#     db.query(HakAkses)
+#     .join(Menu, HakAkses.id_menu == Menu.id)
+#     .filter(
+#         HakAkses.id_user == user_id,
+#         HakAkses.lihat == True,
+#         Menu.route != "#",
+#         Menu.route.like(f"{path}%")  # mengabaikan trailing slash
+#     )
+#     .first()
+# )
+#     finally:
+#         db.close()
+
+#     if not allowed:
+#         # Bisa return JSONResponse untuk AJAX/fetch, bukan 505
+#         if request.headers.get("x-requested-with") == "XMLHttpRequest" or request.method in ["POST", "DELETE", "PUT"]:
+#             return JSONResponse(status_code=403, content={"message": "Akses ditolak"})
+#         # Untuk browser biasa, redirect ke home
+#         return RedirectResponse(url="/", status_code=303)
+
+#     # Jika user punya akses
+#     response = await call_next(request)
+#     return response
+
 @app.middleware("http")
 async def check_login(request: Request, call_next):
-    # Boleh diakses tanpa login
-    allow_paths = ["/login", "/logout", "/static",]
+    """
+    Middleware untuk mengecek:
+    - Login user
+    - Hak akses halaman menu
+    - Melewati API endpoints
+    - Melewati DevTools / static / login paths
+    """
+    # Path yang dilewati tanpa cek hak akses
+    allow_paths = [
+    "/login",
+    "/logout",
+    "/static",
+    "/.well-known",
+    "/docs",         # Swagger UI
+    "/redoc",        # Redoc UI
+    "/openapi.json", # OpenAPI schema
+]
 
-    if not any(request.url.path.startswith(path) for path in allow_paths):
-        if "user_id" not in request.session:
-            return RedirectResponse(url="/login", status_code=303)
+    path = request.url.path.rstrip("/")  
 
-    # kalau sudah login atau path bebas → lanjut
+   
+    if any(path.startswith(p) for p in allow_paths) or request.method in ["POST", "DELETE", "PUT"]:
+        return await call_next(request)
+
+    
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return RedirectResponse(url="/login", status_code=303)
+    print(path)
+    
+    db: Session = SessionLocal()
+    try:
+        akses = (
+            db.query(HakAkses)
+            .join(Menu, HakAkses.id_menu == Menu.id)
+            .filter(
+                HakAkses.id_user == user_id,
+                HakAkses.lihat == True,
+                Menu.route != "#",
+            )
+            .all()
+        )
+    finally:
+        
+        is_allowed = any(path.startswith(a.menu.route.rstrip("/")) for a in akses)
+        db.close()
+
+    #
+
+    if not is_allowed:
+        return JSONResponse(content={"error": "tetot"}, status_code=403)
+
+
+    # User punya akses, lanjutkan request
     response = await call_next(request)
     return response
+
 app.add_middleware(SessionMiddleware, secret_key="supersecretkey123")
