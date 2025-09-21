@@ -20,6 +20,29 @@ def build_menu_tree(menus):
     return root_menus
 
 
+# def common_context(request: Request):
+#     db = SessionLocal()
+#     user_id = get_user_id(request)
+
+#     if not user_id:
+#         db.close()
+#         return {"menus": [], "request": request}
+
+#     role = get_role_id(request)
+#     username = get_username(request)
+  
+#     menus = (
+#         db.query(Menu)
+#         .join(HakAkses, HakAkses.id_menu == Menu.id)
+#         .filter(HakAkses.id_user == user_id, HakAkses.lihat == 1)
+#         .order_by(Menu.urutan)
+#         .all()
+#     )
+
+#     db.close()
+#     return {"menus": build_menu_tree(menus), "request": request, "username": username, "role": role}
+
+
 def common_context(request: Request):
     db = SessionLocal()
     user_id = get_user_id(request)
@@ -30,14 +53,26 @@ def common_context(request: Request):
 
     role = get_role_id(request)
     username = get_username(request)
-  
-    menus = (
+
+    # Ambil semua menu anak yang user punya akses lihat
+    accessible_children = (
         db.query(Menu)
         .join(HakAkses, HakAkses.id_menu == Menu.id)
-        .filter(HakAkses.id_user == user_id, HakAkses.lihat == 1)
-        .order_by(Menu.urutan)
+        .filter(HakAkses.id_user == user_id, HakAkses.lihat == True)
         .all()
     )
 
+    # Ambil parent dari children tersebut (route="#" atau parent asli)
+    parent_ids = list({m.id_parent for m in accessible_children if m.id_parent})
+    parents = db.query(Menu).filter(Menu.id.in_(parent_ids)).all()
+
+    # Gabungkan parent + children untuk build tree
+    menus_to_build = parents + accessible_children
+
     db.close()
-    return {"menus": build_menu_tree(menus), "request": request, "username": username, "role": role}
+    return {
+        "menus": build_menu_tree(menus_to_build),
+        "request": request,
+        "username": username,
+        "role": role
+    }
