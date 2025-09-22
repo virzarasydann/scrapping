@@ -12,6 +12,7 @@ from src.models.ticket_models import Ticket
 from src.schemas.ticket import TicketCreate
 import uuid
 import httpx
+from src.services.sessions_utils import get_user_id, get_role_id
 from src.services.template_service import templates
 router = APIRouter(prefix="/tiket", tags=["Tickets"])
 # templates = Jinja2Templates(directory=SRC_DIR / "templates" / "pages")
@@ -46,23 +47,36 @@ def save_upload_file(file: UploadFile | None) -> str | None:
 
 
 # ------------ GET semua tiket ------------
-@router.get("", response_class=HTMLResponse, name="tiket")
-async def ticket_list(request: Request, db: Session = Depends(get_db)):
-    tickets = db.query(Ticket).all()
+@router.get("", response_class=HTMLResponse,name="tiket")
+async def index(request: Request, db: Session = Depends(get_db)):
+    role = get_role_id(request)
+    user_id = get_user_id(request)
+
+    query_filters = {
+        "admin": lambda q: q,  
+        "teknisi": lambda q: q.filter(Ticket.user_id == user_id),
+    }
+
+    base_query = db.query(Ticket)
+    messages = query_filters.get(role, query_filters["teknisi"])(base_query)
+
     return templates.TemplateResponse(
-        "tiket/index.html", {"request": request, "data": tickets}
+        "tiket/index.html",
+        {"request": request, "data": messages}
     )
 
 
 # ------------ POST tiket baru ------------
 @router.post("", name="ticket_post")
 async def ticket_create(
+    request: Request,
     data: TicketCreate = Depends(TicketCreate.as_form),
     before: UploadFile = File(None),
     after: UploadFile = File(None),
     serial_number: UploadFile = File(None),
     lokasi: UploadFile = File(None),
     db: Session = Depends(get_db),
+    
 ):
     
 
@@ -75,6 +89,7 @@ async def ticket_create(
         return ""
 
     # Simpan file upload
+    user_id = get_user_id(request)
     before_name = save_upload_file(before)
     after_name = save_upload_file(after)
     serial_name = save_upload_file(serial_number)
@@ -95,6 +110,7 @@ async def ticket_create(
         after=after_name,
         serial_number=serial_name,
         lokasi=lokasi_name,
+        user_id=user_id
     )
 
     db.add(ticket)

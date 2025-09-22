@@ -129,7 +129,8 @@ async def check_login(request: Request, call_next):
     "/.well-known",
     "/docs",         # Swagger UI
     "/redoc",        # Redoc UI
-    "/openapi.json", # OpenAPI schema
+    "/openapi.json",
+    "/form" # OpenAPI schema
 ]
 
     path = request.url.path.rstrip("/")  
@@ -164,7 +165,7 @@ async def check_login(request: Request, call_next):
     #
 
     if not is_allowed:
-        return JSONResponse(content={"error": "tetot"}, status_code=403)
+        return JSONResponse(content={"error": "Not Allowed"}, status_code=403)
 
 
     # User punya akses, lanjutkan request

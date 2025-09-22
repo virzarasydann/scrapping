@@ -7,6 +7,7 @@ class Ticket(Base):
     __tablename__ = "tickets"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id= Column(Integer, nullable=False)
     tanggal = Column(Date, nullable=False)                            
     no_tiket = Column(String(64), unique=True, nullable=False, index=True)       
     customer = Column(String(255), nullable=False)                    
