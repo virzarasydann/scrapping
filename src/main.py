@@ -126,7 +126,6 @@ async def check_login(request: Request, call_next):
     "/login",
     "/logout",
     "/static",
-   \
     "/docs",         # Swagger UI
     "/redoc",        # Redoc UI
     "/openapi.json",
