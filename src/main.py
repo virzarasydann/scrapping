@@ -112,64 +112,64 @@ async def logout(request: Request):
 #     response = await call_next(request)
 #     return response
 
-# @app.middleware("http")
-# async def check_login(request: Request, call_next):
-#     """
-#     Middleware untuk mengecek:
-#     - Login user
-#     - Hak akses halaman menu
-#     - Melewati API endpoints
-#     - Melewati DevTools / static / login paths
-#     """
-#     # Path yang dilewati tanpa cek hak akses
-#     allow_paths = [
-#     "/login",
-#     "/logout",
-#     "/static",
-#     "/.well-known",
-#     "/docs",         # Swagger UI
-#     "/redoc",        # Redoc UI
-#     "/openapi.json",
-#     "/form" # OpenAPI schema
-# ]
+@app.middleware("http")
+async def check_login(request: Request, call_next):
+    """
+    Middleware untuk mengecek:
+    - Login user
+    - Hak akses halaman menu
+    - Melewati API endpoints
+    - Melewati DevTools / static / login paths
+    """
+    # Path yang dilewati tanpa cek hak akses
+    allow_paths = [
+    "/login",
+    "/logout",
+    "/static",
+   \
+    "/docs",         # Swagger UI
+    "/redoc",        # Redoc UI
+    "/openapi.json",
+    "/form" # OpenAPI schema
+]
 
-#     path = request.url.path.rstrip("/")  
+    path = request.url.path.rstrip("/")  
 
    
-#     if any(path.startswith(p) for p in allow_paths) or request.method in ["POST", "DELETE", "PUT"]:
-#         return await call_next(request)
+    if any(path.startswith(p) for p in allow_paths) or request.method in ["POST", "DELETE", "PUT"]:
+        return await call_next(request)
 
     
-#     user_id = request.session.get("user_id")
-#     if not user_id:
-#         return RedirectResponse(url="/login", status_code=303)
-#     print(path)
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return RedirectResponse(url="/login", status_code=303)
+    print(path)
     
-#     db: Session = SessionLocal()
-#     try:
-#         akses = (
-#             db.query(HakAkses)
-#             .join(Menu, HakAkses.id_menu == Menu.id)
-#             .filter(
-#                 HakAkses.id_user == user_id,
-#                 HakAkses.lihat == True,
-#                 Menu.route != "#",
-#             )
-#             .all()
-#         )
-#     finally:
+    db: Session = SessionLocal()
+    try:
+        akses = (
+            db.query(HakAkses)
+            .join(Menu, HakAkses.id_menu == Menu.id)
+            .filter(
+                HakAkses.id_user == user_id,
+                HakAkses.lihat == True,
+                Menu.route != "#",
+            )
+            .all()
+        )
+    finally:
         
-#         is_allowed = any(path.startswith(a.menu.route.rstrip("/")) for a in akses)
-#         db.close()
+        is_allowed = any(path.startswith(a.menu.route.rstrip("/")) for a in akses)
+        db.close()
 
-#     #
+    #
 
-#     if not is_allowed:
-#         return JSONResponse(content={"error": "Not Allowed"}, status_code=403)
+    if not is_allowed:
+        return JSONResponse(content={"error": "Not Allowed"}, status_code=403)
 
 
-#     # User punya akses, lanjutkan request
-#     response = await call_next(request)
-#     return response
+    # User punya akses, lanjutkan request
+    response = await call_next(request)
+    return response
 
 app.add_middleware(SessionMiddleware, secret_key="supersecretkey123")
