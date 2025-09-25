@@ -81,7 +81,7 @@ async def ticket_create(
     
 
     
-    BASE_URL = "http://103.191.92.250:8000/public"
+    BASE_URL = "http://103.185.52.65:8000/public"
 
     def file_url(filename: str) -> str:
         if APP_ENV == "production" and filename:
