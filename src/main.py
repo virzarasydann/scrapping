@@ -123,6 +123,7 @@ async def check_login(request: Request, call_next):
     """
     # Path yang dilewati tanpa cek hak akses
     allow_paths = [
+        "/public",
     "/login",
     "/logout",
     "/static",
