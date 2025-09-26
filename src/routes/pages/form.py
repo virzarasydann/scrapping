@@ -7,6 +7,7 @@ from src.configuration.database import get_db
 from sqlalchemy.orm import Session
 from src.models.files_models import File
 from datetime import date
+from src.services.sessions_utils import get_user_id, get_role_id
 from src.services.template_service import templates
 router = APIRouter(prefix="/form", tags=["Pages"])
 # templates = Jinja2Templates(directory=SRC_DIR / "templates" / "pages")
@@ -14,7 +15,8 @@ router = APIRouter(prefix="/form", tags=["Pages"])
 
 @router.get("", response_class=HTMLResponse, name="form")
 async def inbox(request: Request):
-   
+    
+    print(get_user_id(request))
     today = date.today().isoformat()
     return templates.TemplateResponse(
         "form/index.html",

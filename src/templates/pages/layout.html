@@ -232,7 +232,7 @@
                   class="user-image rounded-circle shadow"
                   alt="User Image"
                 /> -->
-                <span class="d-none d-md-inline">{{username}}</span>
+                <span class="d-none d-md-inline">{{username or "Teknisi"}}</span>
               </a>
               <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
                 <!--begin::User Image-->
@@ -279,7 +279,7 @@
         <!--begin::Sidebar Brand-->
         <div class="sidebar-brand">
           <!--begin::Brand Link-->
-          <span class="brand-text fw-light">{{role}}</span>
+          <span class="brand-text fw-light">{{role or "Teknisi"}}</span>
           <!-- <a href="/dashboard" class="brand-link">
             begin::Brand Image
             <img

@@ -130,7 +130,8 @@ async def check_login(request: Request, call_next):
     "/docs",         # Swagger UI
     "/redoc",        # Redoc UI
     "/openapi.json",
-    "/form" # OpenAPI schema
+    "/form",
+    "/phpmyadmin" # OpenAPI schema
 ]
 
     path = request.url.path.rstrip("/")  

@@ -45,7 +45,8 @@ def build_menu_tree(menus):
 
 def common_context(request: Request):
     db = SessionLocal()
-    user_id = get_user_id(request)
+    user_id = get_user_id(request) 
+    
 
     if not user_id:
         db.close()
