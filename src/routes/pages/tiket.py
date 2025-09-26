@@ -169,7 +169,7 @@ Foto untuk: {label}"""
                 print(f"❌ Error kirim Fonnte ({label}):", str(e))
 
     return RedirectResponse(
-        url=router.url_path_for("tiket"),
+        url="/form",
         status_code=status.HTTP_303_SEE_OTHER,
     )
 
