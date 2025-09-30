@@ -3,59 +3,60 @@
 {% block title %}Hak Akses{% endblock %}
 
 {% block content %}
-<div class="app-content-header">
-    <div class="container-fluid">
-        <h3 class="mb-3">Manajemen Hak Akses</h3>
-    </div>
-</div>
 
-<div class="app-content">
-    <div class="container-fluid">
-
-        <!-- Dropdown pilih user -->
-        <div class="mb-3">
-            <label for="userSelect" class="form-label">Pilih User</label>
-            <select id="userSelect" class="form-select">
-                <option value="">-- Pilih User --</option>
-                {% for user in users %}
-                <option value="{{ user.id }}">{{ user.nomer }} ({{ user.role }})</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <!-- Hak akses akan muncul setelah user dipilih -->
-        <div id="hakAksesContainer" style="display:none;">
-            <form action="/hak_akses/save_hak_akses" method="post" id="hakAksesForm">
-                <input type="hidden" name="user_id" id="user_id" value="">
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Menu</th>
-                            <th>Lihat</th>
-                            <th>Tambah</th>
-                            <th>Update</th>
-                            <th>Hapus</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for menu in menu_hak_akses %}
-                        <tr>
-                            
-                            <td>{{ menu.judul }}</td>
-                            <td><input type="checkbox" name="akses[{{ menu.id }}][lihat]"></td>
-                            <td><input type="checkbox" name="akses[{{ menu.id }}][tambah]"></td>
-                            <td><input type="checkbox" name="akses[{{ menu.id }}][update_data]"></td>
-                            <td><input type="checkbox" name="akses[{{ menu.id }}][hapus]"></td>
-                        </tr>
+ <div class="page-content">
+      <section class="section">
+        <div class="card">
+             <div class="card-header">
+                    <div class="d-flex align-content-center justify-content-between">
+                        <h3 class="font-weight-bold text-xl">Hak Akses</h3>
+                    </div>
+                </div>
+          <div class="card-body">
+               <div class="row mb-3 align-items-center">
+                    <label for="userSelect" class="form-label">Pilih User</label>
+                    <select id="userSelect" class="form-select">
+                        <option value="">-- Pilih User --</option>
+                        {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.nomer }} ({{ user.role }})</option>
                         {% endfor %}
-                    </tbody>
-                </table>
+                    </select>
+                </div>
 
-                <button type="submit" class="btn btn-primary">Simpan Hak Akses</button>
-            </form>
+                <div id="hakAksesContainer" style="display:none;">
+                    <form action="/hak_akses/save_hak_akses" method="post" id="hakAksesForm">
+                        <input type="hidden" name="user_id" id="user_id" value="">
+                      <div class="table-responsive">
+                        <table class="table data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Menu</th>
+                                        <th>Lihat</th>
+                                        <th>Tambah</th>
+                                        <th>Update</th>
+                                        <th>Hapus</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for menu in menu_hak_akses %}
+                                    <tr>
+                                        
+                                        <td>{{ menu.judul }}</td>
+                                        <td><input type="checkbox" name="akses[{{ menu.id }}][lihat]"></td>
+                                        <td><input type="checkbox" name="akses[{{ menu.id }}][tambah]"></td>
+                                        <td><input type="checkbox" name="akses[{{ menu.id }}][update_data]"></td>
+                                        <td><input type="checkbox" name="akses[{{ menu.id }}][hapus]"></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Simpan Hak Akses</button>
+                    </form>
+                </div>
+            </div>
         </div>
-
-    </div>
+    </section>
 </div>
 
 <script>

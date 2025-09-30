@@ -3,20 +3,80 @@
 {% block title %}Form Input Tiket{% endblock %}
 
 {% block content %}
+ <style>
+        .table-container {
+            max-height: 500px;
+            overflow-y: auto;
+            overflow-x: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+        }
+
+        .table-container .table {
+            width: 100% !important;
+            margin-bottom: 0 !important;
+        }
+
+        .table-container .thead-dark th {
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 1020 !important;
+            background-color: #343a40 !important;
+            border-color: #454d55 !important;
+        }
+
+        .table-container .table tbody tr:last-child td {
+            border-bottom: 1px solid #dee2e6 !important;
+        }
+
+        .table-container::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .table-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        @media (max-width: 768px) {
+            .modal-xl {
+                max-width: 95% !important;
+            }
+
+            .table-container {
+                max-height: 300px;
+            }
+        }
+
+        .modal-body {
+            overflow: hidden !important;
+        }
+    </style>
+
 <div class="app-content-header">
     <div class="container-fluid d-flex justify-content-between align-items-center">
-        <h3 class="mb-3">Form Input Tiket</h3>
-        <a href="{{ url_for('form') }}" class="btn btn-secondary">
-            <i class="bi bi-arrow-left me-1"></i> Kembali
-        </a>
+       
     </div>
 </div>
 
-<div class="app-content">
-    <div class="container-fluid">
-        <div class="card shadow-sm">
-            <div class="card-header">
-                <h3 class="card-title">Tambah Data Tiket</h3>
+ <div class="page-content">
+     <section class="section">
+        <section class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="mb-3">Form Input Tiket</h3>
+                <a href="{{ url_for('form') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Kembali
+                </a>
             </div>
             <div class="card-body">
                 <form method="POST" action="{{ url_for('ticket_post') }}" enctype="multipart/form-data">
@@ -126,7 +186,7 @@
                     </div>
                 </form>
             </div>
-        </div>
+        </section>
     </div>
 </div>
 

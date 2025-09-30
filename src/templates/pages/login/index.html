@@ -12,13 +12,7 @@
     <link rel="stylesheet" href="/static/template/plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
     
   <style>
-          .login-icon {
-              display: block;
-              margin-left: auto;
-              margin-right: auto;
-              width: 80px;
-              height: auto;
-          }
+       
 
           body {
               background-size: cover;
@@ -47,7 +41,7 @@
           }
       </style>
   </head>
-  <body class="d-flex overflow-hidden overlay align-items-center justify-content-center min-vh-100"
+  <body class="{{ 'theme-dark' if theme == 'dark' else '' }} d-flex overflow-hidden overlay align-items-center justify-content-center min-vh-100"
     style="background-image: url('/public/assets/bg-login.jpg');">
 
      <div class="container">
@@ -89,4 +83,5 @@
     </div>
 
   </body>
+  
 </html>
