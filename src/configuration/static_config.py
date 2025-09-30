@@ -16,9 +16,9 @@ def setup_static_files(app):
     app.mount("/static", StaticFiles(directory=templates_static_dir), name="static")
     app.mount("/public", StaticFiles(directory=public_dir), name="public")
     
-    if templates_static_dir.exists():
-        for item in templates_static_dir.iterdir():
-            if item.is_dir():
-                route = f"/{item.name}"
-                app.mount(route, StaticFiles(directory=item), name=item.name)
-                logger.info(f"Mounted static directory: {route} -> {item}")
+    # if templates_static_dir.exists():
+    #     for item in templates_static_dir.iterdir():
+    #         if item.is_dir():
+    #             route = f"/{item.name}"
+    #             app.mount(route, StaticFiles(directory=item), name=item.name)
+    #             logger.info(f"Mounted static directory: {route} -> {item}")
