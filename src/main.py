@@ -93,8 +93,9 @@ async def check_login(request: Request, call_next):
     "/redoc",        
     "/openapi.json",
     "/form",
-    "/phpmyadmin"
-     "/set-theme"
+    "/phpmyadmin",
+     "/set-theme",
+     "/api"
 ]
 
     path = request.url.path.rstrip("/")  
