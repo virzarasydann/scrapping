@@ -42,14 +42,18 @@ async def webhook_post(
         raw_body = await request.body()
         logger.info(f"Raw body: {raw_body}")
         logger.info(f"Headers: {dict(request.headers)}")
-        
+
         body = await request.json()
         logger.info(f"Received POST payload: {body}")
 
         service = WebhookService(db)
+        logger.info("Before calling process_webhook")
         result = await service.process_webhook(body)
-
+        logger.info(f"After calling process_webhook: {result}")
         return result
+
+
+        
 
     except Exception as e:
         logger.exception("Unexpected error in webhook endpoint")
