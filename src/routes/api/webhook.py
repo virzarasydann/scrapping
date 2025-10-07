@@ -39,6 +39,10 @@ async def webhook_post(
     db: Session = Depends(get_db)
 ):
     try:
+        raw_body = await request.body()
+        logger.info(f"Raw body: {raw_body}")
+        logger.info(f"Headers: {dict(request.headers)}")
+        
         body = await request.json()
         logger.info(f"Received POST payload: {body}")
 
