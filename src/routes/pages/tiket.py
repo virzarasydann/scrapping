@@ -12,6 +12,9 @@ from src.models.ticket_models import Ticket
 from src.schemas.ticket import TicketCreate
 import uuid
 import httpx
+
+import requests
+from bs4 import BeautifulSoup
 from src.services.sessions_utils import get_user_id, get_role_id
 from src.services.template_service import templates
 router = APIRouter(prefix="/tiket", tags=["Tickets"])
@@ -67,6 +70,95 @@ async def index(request: Request, db: Session = Depends(get_db)):
 
 
 # ------------ POST tiket baru ------------
+BASE_URL_CI = "https://fs.616263.my.id"
+CI_USERNAME = "ADMIN1"
+CI_PASSWORD = "ADMINAC"
+
+def ci_create_job(ticket):
+    """
+    Fungsi untuk login ke CodeIgniter dan kirim data job baru
+    berdasarkan data tiket dari FastAPI.
+    """
+    session = requests.Session()
+
+    # Step 1: Ambil token login
+    login_page = session.get(f"{BASE_URL_CI}/login")
+    soup = BeautifulSoup(login_page.text, "html.parser")
+    csrf_login = soup.find("meta", {"name": "csrf_test_name"})["content"]
+    
+    # Step 2: Login
+    login_payload = {
+        "login": CI_USERNAME,
+        "password": CI_PASSWORD,
+        "csrf_test_name": csrf_login
+    }
+    login_resp = session.post(f"{BASE_URL_CI}/login", data=login_payload)
+    print("[DEBUG] After login URL:", login_resp.url)
+    print("[DEBUG] After login snippet:", login_resp.text[:300])
+
+    print("\n[DEBUG] Cookies setelah login:")
+    for cookie in session.cookies:
+        print(f"  {cookie.name} = {cookie.value[:50]}...")
+    # Step 3: Ambil token halaman tambah job
+    add_page = session.get(f"{BASE_URL_CI}/admin/jobs/add")
+    
+    soup_add = BeautifulSoup(add_page.text, "html.parser")
+    for inp in soup_add.find_all(["input", "textarea", "select"]):
+        name = inp.get("name")
+        if name:
+            print("Field:", name)
+    csrf_add = soup_add.find("meta", {"name": "csrf_test_name"})["content"]
+
+    # Step 4: Kirim data job
+    # payload = {
+    #     # "customer_name": ticket.customer or "testing",
+    #     "customer_address": "Jl. Test Integration No.1",
+    #     "customer_phone_number": "081234567890",
+    #     "ac_unit_name": ticket.model or "testing",
+    #     "id_service_type": "24",
+    #     "description": ticket.keluhan or "testing",
+    #     "team": "AhliAC",
+    #     "accessor": "Wahyu Nugraha",
+    #     "start_date": str(ticket.tanggal),
+    #     "end_date": str(ticket.tanggal),
+    #     "csrf_test_name": csrf_add,
+    #     "save": "1"
+    # }
+
+    payload = {
+        "csrf_test_name": csrf_add,
+        
+        # "id_customer": "1",                              # ← TAMBAHKAN
+        "customer_name" : ticket.customer,
+        "customer_address": "Jl. Test Integration No.1",
+        "customer_phone_number": "081234567890",
+        
+        "id_ac_unit": "156",                               # ← TAMBAHKAN
+        "id_service_type": "24",
+        "description": ticket.keluhan or "testing",
+        "team": "AhliAC",
+        "accessor": "Wahyu Nugraha",
+        "start_date": str(ticket.tanggal),
+        "end_date": str(ticket.tanggal),
+        "save": "1"                                     # ← TAMBAHKAN (atau "")
+    }
+
+    response = session.post(f"{BASE_URL_CI}/admin/jobs/add", data=payload)
+    # print("[CI] Response text:", response.text)
+    # print("[CI] Response JSON:", response.content)
+    print("\n[DEBUG] Payload yang dikirim:")
+    for k, v in payload.items():
+        print(f"  {k}: {v}")
+    print("[CI] Status:", response.status_code)
+    print("[CI] URL:", response.url)
+
+    return response.status_code
+
+
+# ----------------------------- #
+# Function utama FastAPI kamu   #
+# ----------------------------- #
+
 @router.post("", name="ticket_post")
 async def ticket_create(
     request: Request,
@@ -76,11 +168,7 @@ async def ticket_create(
     serial_number: UploadFile = File(None),
     lokasi: UploadFile = File(None),
     db: Session = Depends(get_db),
-    
 ):
-    
-
-    
     BASE_URL = "http://192.206.117.191:8000/public"
 
     def file_url(filename: str) -> str:
@@ -88,14 +176,18 @@ async def ticket_create(
             return f"{BASE_URL}/{filename}"
         return ""
 
+    # -------------------
     # Simpan file upload
+    # -------------------
     user_id = get_user_id(request)
     before_name = save_upload_file(before)
     after_name = save_upload_file(after)
     serial_name = save_upload_file(serial_number)
     lokasi_name = save_upload_file(lokasi)
 
-    # Buat ticket di DB
+    # -------------------
+    # Buat tiket di DB
+    # -------------------
     ticket = Ticket(
         tanggal=data.tanggal,
         no_tiket=data.no_tiket,
@@ -117,7 +209,18 @@ async def ticket_create(
     db.commit()
     db.refresh(ticket)
 
-    # List file beserta label
+    # -------------------------
+    # Kirim data ke CI (jobs)
+    # -------------------------
+    try:
+        ci_status = ci_create_job(ticket)
+        print(f"[+] Job CI status: {ci_status}")
+    except Exception as e:
+        print("❌ Gagal integrasi ke CI:", e)
+
+    # -------------------------
+    # Kirim notifikasi ke Fonnte
+    # -------------------------
     files = [
         ("Before", before_name),
         ("After", after_name),
@@ -132,24 +235,19 @@ async def ticket_create(
             if not filename:
                 continue
 
-            # Pesan berbeda untuk file pertama vs berikutnya
-            if idx == 0:
-                # Full ticket message + label foto
-                message = f"""Tiket baru berhasil dibuat!
-No Tiket: {ticket.no_tiket}
-Customer: {ticket.customer}
-Tanggal: {ticket.tanggal}
-Model: {ticket.model}
-Keluhan: {ticket.keluhan}
-Teknisi: {ticket.teknisi}
-Indikasi: {ticket.indikasi}
-Tindakan: {ticket.tindakan}
-Lokasi Koor: {ticket.lokasi_koordinat}
-
-Foto untuk: {label}"""
-            else:
-                # Minimal message: tiket + nama file
-                message = f"Tiket: {ticket.no_tiket}\nFoto untuk: {label}"
+            message = (
+                f"Tiket baru berhasil dibuat!\n"
+                f"No Tiket: {ticket.no_tiket}\n"
+                f"Customer: {ticket.customer}\n"
+                f"Tanggal: {ticket.tanggal}\n"
+                f"Model: {ticket.model}\n"
+                f"Keluhan: {ticket.keluhan}\n"
+                f"Teknisi: {ticket.teknisi}\n"
+                f"Indikasi: {ticket.indikasi}\n"
+                f"Tindakan: {ticket.tindakan}\n"
+                f"Lokasi Koor: {ticket.lokasi_koordinat}\n\n"
+                f"Foto untuk: {label}"
+            ) if idx == 0 else f"Tiket: {ticket.no_tiket}\nFoto untuk: {label}"
 
             payload = {
                 "target": GROUP_ID,

@@ -34,7 +34,8 @@ GROUP_ID = os.getenv("GROUP_ID")
 class BaseConfig:
     DB_USER = os.getenv("DB_USER", "root")
     DB_PASSWORD = os.getenv("DB_PASSWORD", "")
-    DB_NAME = os.getenv("DB_NAME", "webhook_db")
+    DB_INTERNAL = os.getenv("DB_NAME", "webhook_db")
+    DB_CLIENT = os.getenv("DB_CLIENT", "fs_track")
 
 class DevelopmentConfig(BaseConfig):
     DB_HOST = "localhost"   # biasanya 127.0.0.1 juga bisa

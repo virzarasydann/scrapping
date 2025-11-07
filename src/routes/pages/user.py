@@ -3,13 +3,14 @@ from fastapi import APIRouter, Request, Depends, Form, status
 from fastapi.templating import Jinja2Templates
 from src.configuration.config import SRC_DIR
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
-from src.configuration.database import get_db
+from src.configuration.database import get_db, get_db_client
 from sqlalchemy.orm import Session
 from src.models.listeners_models import Listener
 from src.models.user_models import User
 from src.models.files_models import File
 from src.models.menu_models import Menu
 from src.models.hak_akses_models import HakAkses
+from src.models.fs_track.technicians import Technician
 from sqlalchemy.orm import load_only
 from src.services.template_service import templates
 import bcrypt
@@ -45,7 +46,8 @@ async def create_or_update_user_in_admin(
     id_user: Optional[str] = Form(None),
     nomer: str = Form(...),
     password: str = Form(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    db_client: Session = Depends(get_db_client)
 ):
 
     if id_user:
@@ -73,9 +75,15 @@ async def create_or_update_user_in_admin(
             password=hashed_str,
             role="teknisi"
         )
+
+        newTechnician = Technician(technician_name=nomer)
+        
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
+        db_client.add(newTechnician)
+        db_client.commit()
+        db_client.refresh(newTechnician)
 
         
         menus = db.query(Menu.id).filter(Menu.is_admin == False, Menu.route != "#").all()

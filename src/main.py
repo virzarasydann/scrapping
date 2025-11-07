@@ -14,12 +14,14 @@ from src.routes import api_routers, page_routers
 from src.services.sessions_utils import clear_session
 from src.models.menu_models import Menu
 from src.models.hak_akses_models import HakAkses
-from src.configuration.database import SessionLocal
+# from src.configuration.database import SessionLocal
+from src.configuration.database import SessionLocal, ClientSessionLocal
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from src.models.user_models import User
 from sqlalchemy import func
 from sqlalchemy import literal
+
 logger = setup_logging()
 
 print(APP_ENV)
