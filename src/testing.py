@@ -58,13 +58,4 @@ print("="*50)
 for key, value in response.headers.items():
     print(f"{key}: {value}")
 
-# print("\n" + "="*50)
-# print("[RESPONSE DETAILS]")
-# print("="*50)
-# print(f"Status: {response.status_code}")
-# print(f"Reason: {response.reason}")
-# print(f"URL: {response.url}")
-# print(f"Encoding: {response.encoding}")
-# print(f"Content-Length: {len(response.content)}")
-# print(f"Text Length: {len(response.text)}")
-# print(f"Raw Content: {response.content}")
+

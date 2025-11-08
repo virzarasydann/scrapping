@@ -15,6 +15,7 @@ import httpx
 
 import requests
 from bs4 import BeautifulSoup
+from src.services.fs_track.factory import CodeIgniterServiceFactory
 from src.services.sessions_utils import get_user_id, get_role_id
 from src.services.template_service import templates
 router = APIRouter(prefix="/tiket", tags=["Tickets"])
@@ -69,95 +70,101 @@ async def index(request: Request, db: Session = Depends(get_db)):
     )
 
 
-# ------------ POST tiket baru ------------
-BASE_URL_CI = "https://fs.616263.my.id"
-CI_USERNAME = "ADMIN1"
-CI_PASSWORD = "ADMINAC"
 
-def ci_create_job(ticket):
-    """
-    Fungsi untuk login ke CodeIgniter dan kirim data job baru
-    berdasarkan data tiket dari FastAPI.
-    """
-    session = requests.Session()
+# BASE_URL_CI = "https://fs.616263.my.id"
+# CI_USERNAME = "ADMIN1"
+# CI_PASSWORD = "ADMINAC"
 
-    # Step 1: Ambil token login
-    login_page = session.get(f"{BASE_URL_CI}/login")
-    soup = BeautifulSoup(login_page.text, "html.parser")
-    csrf_login = soup.find("meta", {"name": "csrf_test_name"})["content"]
+# def ci_create_job(ticket):
+#     """
+#     Fungsi untuk login ke CodeIgniter dan kirim data job baru
+#     berdasarkan data tiket dari FastAPI.
+#     """
+#     session = requests.Session()
+
     
-    # Step 2: Login
-    login_payload = {
-        "login": CI_USERNAME,
-        "password": CI_PASSWORD,
-        "csrf_test_name": csrf_login
-    }
-    login_resp = session.post(f"{BASE_URL_CI}/login", data=login_payload)
-    print("[DEBUG] After login URL:", login_resp.url)
-    print("[DEBUG] After login snippet:", login_resp.text[:300])
-
-    print("\n[DEBUG] Cookies setelah login:")
-    for cookie in session.cookies:
-        print(f"  {cookie.name} = {cookie.value[:50]}...")
-    # Step 3: Ambil token halaman tambah job
-    add_page = session.get(f"{BASE_URL_CI}/admin/jobs/add")
+#     login_page = session.get(f"{BASE_URL_CI}/login")
+#     soup = BeautifulSoup(login_page.text, "html.parser")
+#     csrf_login = soup.find("meta", {"name": "csrf_test_name"})["content"]
     
-    soup_add = BeautifulSoup(add_page.text, "html.parser")
-    for inp in soup_add.find_all(["input", "textarea", "select"]):
-        name = inp.get("name")
-        if name:
-            print("Field:", name)
-    csrf_add = soup_add.find("meta", {"name": "csrf_test_name"})["content"]
+#     # Step 2: Login
+#     login_payload = {
+#         "login": CI_USERNAME,
+#         "password": CI_PASSWORD,
+#         "csrf_test_name": csrf_login
+#     }
+#     login_resp = session.post(f"{BASE_URL_CI}/login", data=login_payload)
+#     print("[DEBUG] After login URL:", login_resp.url)
+#     print("[DEBUG] After login snippet:", login_resp.text[:300])
 
-    # Step 4: Kirim data job
-    # payload = {
-    #     # "customer_name": ticket.customer or "testing",
-    #     "customer_address": "Jl. Test Integration No.1",
-    #     "customer_phone_number": "081234567890",
-    #     "ac_unit_name": ticket.model or "testing",
-    #     "id_service_type": "24",
-    #     "description": ticket.keluhan or "testing",
-    #     "team": "AhliAC",
-    #     "accessor": "Wahyu Nugraha",
-    #     "start_date": str(ticket.tanggal),
-    #     "end_date": str(ticket.tanggal),
-    #     "csrf_test_name": csrf_add,
-    #     "save": "1"
-    # }
+#     print("\n[DEBUG] Cookies setelah login:")
+#     for cookie in session.cookies:
+#         print(f"  {cookie.name} = {cookie.value[:50]}...")
+#     # Step 3: Ambil token halaman tambah job
+#     add_page = session.get(f"{BASE_URL_CI}/admin/jobs/add")
+    
+#     soup_add = BeautifulSoup(add_page.text, "html.parser")
+#     for inp in soup_add.find_all(["input", "textarea", "select"]):
+#         name = inp.get("name")
+#         if name:
+#             print("Field:", name)
+#     csrf_add = soup_add.find("meta", {"name": "csrf_test_name"})["content"]
 
-    payload = {
-        "csrf_test_name": csrf_add,
+#     # Step 4: Kirim data job
+#     # payload = {
+#     #     # "customer_name": ticket.customer or "testing",
+#     #     "customer_address": "Jl. Test Integration No.1",
+#     #     "customer_phone_number": "081234567890",
+#     #     "ac_unit_name": ticket.model or "testing",
+#     #     "id_service_type": "24",
+#     #     "description": ticket.keluhan or "testing",
+#     #     "team": "AhliAC",
+#     #     "accessor": "Wahyu Nugraha",
+#     #     "start_date": str(ticket.tanggal),
+#     #     "end_date": str(ticket.tanggal),
+#     #     "csrf_test_name": csrf_add,
+#     #     "save": "1"
+#     # }
+
+#     payload = {
+#         "csrf_test_name": csrf_add,
         
-        # "id_customer": "1",                              # ← TAMBAHKAN
-        "customer_name" : ticket.customer,
-        "customer_address": "Jl. Test Integration No.1",
-        "customer_phone_number": "081234567890",
+#         # "id_customer": "1",                              
+#         "customer_name" : ticket.customer,
+#         "customer_address": "Jl. Test Integration No.1",
+#         "customer_phone_number": "081234567890",
         
-        "id_ac_unit": "156",                               # ← TAMBAHKAN
-        "id_service_type": "24",
-        "description": ticket.keluhan or "testing",
-        "team": "AhliAC",
-        "accessor": "Wahyu Nugraha",
-        "start_date": str(ticket.tanggal),
-        "end_date": str(ticket.tanggal),
-        "save": "1"                                     # ← TAMBAHKAN (atau "")
-    }
+#         "id_ac_unit": "156",                               
+#         "id_service_type": "24",
+#         "description": ticket.keluhan or "testing",
+#         "team": "AhliAC",
+#         "accessor": "Wahyu Nugraha",
+#         "start_date": str(ticket.tanggal),
+#         "end_date": str(ticket.tanggal),
+#         "save": "1"                                     
+#     }
 
-    response = session.post(f"{BASE_URL_CI}/admin/jobs/add", data=payload)
-    # print("[CI] Response text:", response.text)
-    # print("[CI] Response JSON:", response.content)
-    print("\n[DEBUG] Payload yang dikirim:")
-    for k, v in payload.items():
-        print(f"  {k}: {v}")
-    print("[CI] Status:", response.status_code)
-    print("[CI] URL:", response.url)
+#     response = session.post(f"{BASE_URL_CI}/admin/jobs/add", data=payload)
+    
+#     print("\n[DEBUG] Payload yang dikirim:")
+#     for k, v in payload.items():
+#         print(f"  {k}: {v}")
+#     print("[CI] Status:", response.status_code)
+#     print("[CI] URL:", response.url)
 
-    return response.status_code
+#     return response.status_code
 
 
-# ----------------------------- #
-# Function utama FastAPI kamu   #
-# ----------------------------- #
+async def ci_create_job(ticket: Ticket) -> int:
+    BASE_URL_CI = "https://fs.616263.my.id"
+    CI_USERNAME = "ADMIN1"
+    CI_PASSWORD = "ADMINAC"
+    
+    service = CodeIgniterServiceFactory.create_service(
+        BASE_URL_CI, CI_USERNAME, CI_PASSWORD
+    )
+    
+    return await service.create_job_from_ticket(ticket)
 
 @router.post("", name="ticket_post")
 async def ticket_create(
@@ -176,18 +183,14 @@ async def ticket_create(
             return f"{BASE_URL}/{filename}"
         return ""
 
-    # -------------------
-    # Simpan file upload
-    # -------------------
+    
     user_id = get_user_id(request)
     before_name = save_upload_file(before)
     after_name = save_upload_file(after)
     serial_name = save_upload_file(serial_number)
     lokasi_name = save_upload_file(lokasi)
 
-    # -------------------
-    # Buat tiket di DB
-    # -------------------
+   
     ticket = Ticket(
         tanggal=data.tanggal,
         no_tiket=data.no_tiket,
@@ -209,18 +212,14 @@ async def ticket_create(
     db.commit()
     db.refresh(ticket)
 
-    # -------------------------
-    # Kirim data ke CI (jobs)
-    # -------------------------
+   
     try:
-        ci_status = ci_create_job(ticket)
+        ci_status = await ci_create_job(ticket)
         print(f"[+] Job CI status: {ci_status}")
     except Exception as e:
         print("❌ Gagal integrasi ke CI:", e)
 
-    # -------------------------
-    # Kirim notifikasi ke Fonnte
-    # -------------------------
+   
     files = [
         ("Before", before_name),
         ("After", after_name),
