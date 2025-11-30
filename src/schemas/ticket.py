@@ -1,16 +1,24 @@
-from pydantic import BaseModel
 from fastapi import Form
+from pydantic import BaseModel, field_validator
+from typing import Optional
 
 class TicketCreate(BaseModel):
     tanggal: str
     no_tiket: str
     customer: str
-    model: str | None = None
-    keluhan: str | None = None
-    teknisi: str | None = None
-    indikasi: str | None = None
-    tindakan: str | None = None
-    lokasi_koordinat: str | None = None
+    model: Optional[str] = None
+    keluhan: Optional[str] = None
+    teknisi: Optional[str] = None
+    indikasi: Optional[str] = None
+    tindakan: Optional[str] = None
+    lokasi_koordinat: Optional[str] = None
+
+    @field_validator("tanggal", "no_tiket", "customer")
+    def required_not_empty(cls, v, field):
+        if v is None or str(v).strip() == "":
+            raise ValueError(f"{field.field_name} tidak boleh kosong")
+        return v
+
 
     @classmethod
     def as_form(

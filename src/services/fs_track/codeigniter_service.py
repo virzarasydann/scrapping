@@ -1,10 +1,11 @@
 # src/services/fs_track/codeigniter_service.py
 import aiohttp
-from src.models.fs_track.interfaces import IAuthenticator, IJobCreator
-from src.models.fs_track.domain_models import Ticket
 
+from src.models.fs_track.domain_models import Ticket
+from src.services.fs_track.job_creator import JobCreator
+from src.services.fs_track.authenticator import CodeIgniterAuthenticator
 class CodeIgniterService:
-    def __init__(self, authenticator: IAuthenticator, job_creator: IJobCreator):
+    def __init__(self, authenticator: CodeIgniterAuthenticator, job_creator: JobCreator):
         self.authenticator = authenticator
         self.job_creator = job_creator
     

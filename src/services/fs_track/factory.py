@@ -6,11 +6,17 @@ from src.services.fs_track.codeigniter_service import CodeIgniterService
 
 class CodeIgniterServiceFactory:
     @staticmethod
-    def create_service(base_url: str, username: str, password: str) -> CodeIgniterService:
-        credentials = LoginCredentials(username=username, password=password)
-        csrf_handler = CSRFHandler()
+    def create_service(
+        base_url: str, 
+        username: str, 
+        password: str
+    ) -> CodeIgniterService:
         
+        credentials = LoginCredentials(username=username, password=password)
+        
+        csrf_handler = CSRFHandler()
         authenticator = CodeIgniterAuthenticator(base_url, credentials, csrf_handler)
+        
         job_creator = JobCreator(base_url, csrf_handler)
         
         return CodeIgniterService(authenticator, job_creator)

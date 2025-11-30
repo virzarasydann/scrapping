@@ -1,0 +1,41 @@
+[
+    {
+        "domain": ".greeindonesia.com",
+        "expirationDate": 1795188455.509158,
+        "hostOnly": false,
+        "httpOnly": true,
+        "name": "token_production",
+        "path": "/",
+        "sameSite": null,
+        "secure": true,
+        "session": false,
+        "storeId": null,
+        "value": "d154b5137301f40ec792d9765c9d88f0"
+    },
+    {
+        "domain": ".greeindonesia.com",
+        "expirationDate": 1764262799.876961,
+        "hostOnly": false,
+        "httpOnly": true,
+        "name": "last_updated_permission_partner_ID_production",
+        "path": "/",
+        "sameSite": null,
+        "secure": true,
+        "session": false,
+        "storeId": null,
+        "value": "1764262799"
+    },
+    {
+        "domain": ".greeindonesia.com",
+        "expirationDate": 1795188455.508728,
+        "hostOnly": false,
+        "httpOnly": true,
+        "name": "user_code_production",
+        "path": "/",
+        "sameSite": null,
+        "secure": true,
+        "session": false,
+        "storeId": null,
+        "value": "eyJpdiI6Ii8rNURDL1pBNzYrUmsrTENML1JQV0E9PSIsInZhbHVlIjoia2xGcjU2cWFSanRUQVlnTE9CZU1uQT09IiwibWFjIjoiNDBjZTRlZDQwZGEyNzgxNWE5NDM4NGJmMzY0MzhhMzU3MzdhZTBjN2RmNmNhY2Q2ZjRiZmJmN2Y4NjA2MDQwOSIsInRhZyI6IiJ9"
+    }
+]

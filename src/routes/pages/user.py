@@ -10,7 +10,7 @@ from src.models.user_models import User
 from src.models.files_models import File
 from src.models.menu_models import Menu
 from src.models.hak_akses_models import HakAkses
-from src.models.fs_track.technicians import Technician
+
 from sqlalchemy.orm import load_only
 from src.services.template_service import templates
 import bcrypt
@@ -47,7 +47,7 @@ async def create_or_update_user_in_admin(
     nomer: str = Form(...),
     password: str = Form(...),
     db: Session = Depends(get_db),
-    db_client: Session = Depends(get_db_client)
+    
 ):
 
     if id_user:
@@ -76,14 +76,12 @@ async def create_or_update_user_in_admin(
             role="teknisi"
         )
 
-        newTechnician = Technician(technician_name=nomer)
+        
         
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
-        db_client.add(newTechnician)
-        db_client.commit()
-        db_client.refresh(newTechnician)
+       
 
         
         menus = db.query(Menu.id).filter(Menu.is_admin == False, Menu.route != "#").all()

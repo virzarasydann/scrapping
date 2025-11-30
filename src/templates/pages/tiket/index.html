@@ -59,7 +59,8 @@
         }
 
         .modal-body {
-            overflow: hidden !important;
+            max-height: 70vh !important;
+            overflow-y: auto !important;
         }
     </style>
 
@@ -84,15 +85,9 @@
                                 <th>Tanggal</th>
                                 <th>No Tiket</th>
                                 <th>Customer</th>
-                                <th>Model</th>
-                                <th>Keluhan</th>
-                                <th>Teknisi</th>
-                                <th>Indikasi</th>
-                                <th>Tindakan</th>
-                                <th>Before</th>
-                                <th>After</th>
-                                <th>Serial</th>
-                                <th>Lokasi</th>
+                                <th>Detail</th>
+                                <th>Foto</th>
+                                 <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -103,40 +98,35 @@
                                 <td>{{ tiket.tanggal or "-" }}</td>
                                 <td>{{ tiket.no_tiket or "-" }}</td>
                                 <td>{{ tiket.customer or "-" }}</td>
-                                <td>{{ tiket.model or "-" }}</td>
-                                <td>{{ tiket.keluhan or "-" }}</td>
-                                <td>{{ tiket.teknisi or "-" }}</td>
-                                <td>{{ tiket.indikasi or "-" }}</td>
-                                <td>{{ tiket.tindakan or "-" }}</td>
                                 <td>
-                                    {% if tiket.before %}
-                                    <a href="/public/{{ tiket.before }}" target="_blank"
-                                        class="btn btn-sm btn-primary">Lihat</a>
-                                    {% else %}<span class="text-muted">-</span>{% endif %}
+                                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                                        data-bs-target="#detailModal{{ tiket.id }}">
+                                        <i class="bi bi-info-circle"></i> Lihat Detail
+                                    </button>
                                 </td>
                                 <td>
-                                    {% if tiket.after %}
-                                    <a href="/public/{{ tiket.after }}" target="_blank"
-                                        class="btn btn-sm btn-primary">Lihat</a>
-                                    {% else %}<span class="text-muted">-</span>{% endif %}
+                                    <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal"
+                                        data-bs-target="#fotoModal{{ tiket.id }}">
+                                        <i class="bi bi-images"></i> Lihat Foto
+                                    </button>
                                 </td>
                                 <td>
-                                    {% if tiket.serial_number %}
-                                    <a href="/public/{{ tiket.serial_number }}" target="_blank"
-                                        class="btn btn-sm btn-primary">Lihat</a>
-                                    {% else %}<span class="text-muted">-</span>{% endif %}
-                                </td>
-                                <td>
-                                    {% if tiket.lokasi %}
-                                    <a href="/public/{{ tiket.lokasi }}" target="_blank"
-                                        class="btn btn-sm btn-primary">Lihat</a>
-                                    {% else %}<span class="text-muted">-</span>{% endif %}
-                                </td>
+                                       <button type="button"
+                                               class="btn btn-sm btn-success"
+                                               onclick="mulaiFS({{ tiket.id }})">
+                                           <i class="bi bi-play-circle"></i> Mulai FS
+                                       </button>
+                                       <button type="button"
+                                                class="btn btn-sm btn-warning"
+                                                onclick="mulaiGree({{ tiket.id }})">
+                                            <i class="bi bi-cloud-upload"></i> Mulai Gree
+                                        </button>
+                                   </td>
                             </tr>
                             {% endfor %}
                             {% else %}
                             <tr>
-                                <td colspan="13" class="text-center text-muted py-4">
+                                <td colspan="6" class="text-center text-muted py-4">
                                     <i class="bi bi-search display-4 d-block mb-2"></i>
                                     <h4>Data Tidak Ditemukan</h4>
                                     <p>Belum ada data tiket dalam sistem</p>
@@ -145,10 +135,721 @@
                             {% endif %}
                         </tbody>
                     </table>
+
+                    <!-- SEMUA MODAL DI SINI - DI LUAR TABLE -->
+                    {% if data is defined and data %}
+                    {% for tiket in data %}
+
+                    <!-- Modal Foto -->
+                    <div class="modal fade" id="fotoModal{{ tiket.id }}" tabindex="-1" aria-labelledby="fotoModalLabel{{ tiket.id }}"
+                        aria-hidden="true">
+                        <div class="modal-dialog modal-xl">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="fotoModalLabel{{ tiket.id }}">
+                                        Foto Tiket: {{ tiket.no_tiket }} - {{ tiket.customer }}
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                                    <div class="row g-3">
+
+                                        <!-- Before -->
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <strong><i class="bi bi-image"></i> Before</strong>
+                                                </div>
+                                                <div class="card-body text-center">
+                                                    {% if tiket.before %}
+                                                    <img src="/public/{{ tiket.before }}" class="img-fluid rounded shadow-sm foto-preview"
+                                                        alt="Before" style="max-height: 250px; object-fit: contain; cursor: pointer;"
+                                                        onclick="openImageNewTab('/public/{{ tiket.before }}')">
+                                                    <div class="mt-2">
+                                                        <a href="/public/{{ tiket.before }}" target="_blank"
+                                                            class="btn btn-sm btn-outline-primary">
+                                                            <i class="bi bi-box-arrow-up-right"></i> Buka di Tab Baru
+                                                        </a>
+                                                    </div>
+                                                    {% else %}
+                                                    <div class="text-muted py-5">
+                                                        <i class="bi bi-image" style="font-size: 3rem;"></i>
+                                                        <p class="mt-2">Tidak ada foto</p>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- After -->
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <strong><i class="bi bi-image"></i> After</strong>
+                                                </div>
+                                                <div class="card-body text-center">
+                                                    {% if tiket.after %}
+                                                    <img src="/public/{{ tiket.after }}" class="img-fluid rounded shadow-sm foto-preview"
+                                                        alt="After" style="max-height: 250px; object-fit: contain; cursor: pointer;"
+                                                        onclick="openImageNewTab('/public/{{ tiket.after }}')">
+                                                    <div class="mt-2">
+                                                        <a href="/public/{{ tiket.after }}" target="_blank"
+                                                            class="btn btn-sm btn-outline-success">
+                                                            <i class="bi bi-box-arrow-up-right"></i> Buka di Tab Baru
+                                                        </a>
+                                                    </div>
+                                                    {% else %}
+                                                    <div class="text-muted py-5">
+                                                        <i class="bi bi-image" style="font-size: 3rem;"></i>
+                                                        <p class="mt-2">Tidak ada foto</p>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Serial Number -->
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <strong><i class="bi bi-upc-scan"></i> Serial Number</strong>
+                                                </div>
+                                                <div class="card-body text-center">
+                                                    {% if tiket.serial_number %}
+                                                    <img src="/public/{{ tiket.serial_number }}"
+                                                        class="img-fluid rounded shadow-sm foto-preview" alt="Serial Number"
+                                                        style="max-height: 250px; object-fit: contain; cursor: pointer;"
+                                                        onclick="openImageNewTab('/public/{{ tiket.serial_number }}')">
+                                                    <div class="mt-2">
+                                                        <a href="/public/{{ tiket.serial_number }}" target="_blank"
+                                                            class="btn btn-sm btn-outline-warning">
+                                                            <i class="bi bi-box-arrow-up-right"></i> Buka di Tab Baru
+                                                        </a>
+                                                    </div>
+                                                    {% else %}
+                                                    <div class="text-muted py-5">
+                                                        <i class="bi bi-image" style="font-size: 3rem;"></i>
+                                                        <p class="mt-2">Tidak ada foto</p>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Lokasi -->
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <strong><i class="bi bi-geo-alt"></i> Lokasi</strong>
+                                                </div>
+                                                <div class="card-body text-center">
+                                                    {% if tiket.lokasi %}
+                                                    <img src="/public/{{ tiket.lokasi }}" class="img-fluid rounded shadow-sm foto-preview"
+                                                        alt="Lokasi" style="max-height: 250px; object-fit: contain; cursor: pointer;"
+                                                        onclick="openImageNewTab('/public/{{ tiket.lokasi }}')">
+                                                    <div class="mt-2">
+                                                        <a href="/public/{{ tiket.lokasi }}" target="_blank"
+                                                            class="btn btn-sm btn-outline-info">
+                                                            <i class="bi bi-box-arrow-up-right"></i> Buka di Tab Baru
+                                                        </a>
+                                                    </div>
+                                                    {% else %}
+                                                    <div class="text-muted py-5">
+                                                        <i class="bi bi-image" style="font-size: 3rem;"></i>
+                                                        <p class="mt-2">Tidak ada foto</p>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Detail -->
+                <!-- Modal Detail -->
+                <div class="modal fade" id="detailModal{{ tiket.id }}" tabindex="-1" aria-labelledby="detailModalLabel{{ tiket.id }}"
+                    aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="detailModalLabel{{ tiket.id }}">
+                                    Detail Tiket: {{ tiket.no_tiket }}
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <strong><i class="bi bi-info-circle"></i> Informasi Umum</strong>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-borderless mb-0">
+                                            <tr>
+                                                <td width="150"><strong>Tanggal</strong></td>
+                                                <td width="20">:</td>
+                                                <td>{{ tiket.tanggal or "-" }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>No Tiket</strong></td>
+                                                <td>:</td>
+                                                <td>{{ tiket.no_tiket or "-" }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Customer</strong></td>
+                                                <td>:</td>
+                                                <td>{{ tiket.customer or "-" }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Model</strong></td>
+                                                <td>:</td>
+                                                <td>{{ tiket.model or "-" }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Keluhan</strong></td>
+                                                <td>:</td>
+                                                <td style="white-space: pre-wrap;">{{ tiket.keluhan or "-" }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Teknisi</strong></td>
+                                                <td>:</td>
+                                                <td>{{ tiket.teknisi or "-" }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Indikasi</strong></td>
+                                                <td>:</td>
+                                                <td style="white-space: pre-wrap;">{{ tiket.indikasi or "-" }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Tindakan</strong></td>
+                                                <td>:</td>
+                                                <td style="white-space: pre-wrap;">{{ tiket.tindakan or "-" }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Lokasi Koordinat</strong></td>
+                                                <td>:</td>
+                                                <td>
+                                                    {% if tiket.lokasi_koordinat %}
+                                                    {{ tiket.lokasi_koordinat }}
+                                                    <a href="https://www.google.com/maps?q={{ tiket.lokasi_koordinat }}" target="_blank"
+                                                        class="btn btn-sm btn-outline-primary ms-2">
+                                                        <i class="bi bi-map"></i> Buka Maps
+                                                    </a>
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Modal Progress FS -->
+                <div class="modal fade" id="fsProgressModal" tabindex="-1" aria-labelledby="fsProgressModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="fsProgressModalLabel">
+                                    <i class="bi bi-gear-fill"></i> Memulai FS Track
+                                </h5>
+                            </div>
+                            <div class="modal-body text-center py-4">
+                                <!-- Status Icon -->
+                                <div id="fsStatusIcon" class="mb-3">
+                                    <div class="spinner-border text-primary" style="width: 4rem; height: 4rem;" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+
+                                <!-- Status Message -->
+                                <h5 id="fsStatusMessage" class="mb-3">Memulai proses...</h5>
+
+                                <!-- Progress Bar -->
+                                <div class="progress mb-3" style="height: 25px;">
+                                    <div id="fsProgressBar"
+                                         class="progress-bar progress-bar-striped progress-bar-animated"
+                                         role="progressbar"
+                                         style="width: 10%"
+                                         aria-valuenow="10"
+                                         aria-valuemin="0"
+                                         aria-valuemax="100">
+                                        10%
+                                    </div>
+                                </div>
+
+                                <!-- Detail Info -->
+                                <p id="fsDetailInfo" class="text-muted small">
+                                    Mohon tunggu sebentar...
+                                </p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button"
+                                        class="btn btn-secondary"
+                                        id="fsCloseBtn"
+                                        data-bs-dismiss="modal"
+                                        disabled>
+                                    Tutup
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="greeProgressModal" tabindex="-1" aria-labelledby="greeProgressModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-warning bg-opacity-10">
+                                <h5 class="modal-title" id="greeProgressModalLabel">
+                                    <i class="bi bi-cloud-upload-fill"></i> Memulai Gree Automation
+                                </h5>
+                            </div>
+                            <div class="modal-body text-center py-4">
+                                <!-- Status Icon -->
+                                <div id="greeStatusIcon" class="mb-3">
+                                    <div class="spinner-border text-warning" style="width: 4rem; height: 4rem;" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+
+                                <!-- Status Message -->
+                                <h5 id="greeStatusMessage" class="mb-3">Memulai proses...</h5>
+
+                                <!-- Progress Bar -->
+                                <div class="progress mb-3" style="height: 25px;">
+                                    <div id="greeProgressBar"
+                                            class="progress-bar progress-bar-striped progress-bar-animated bg-warning"
+                                            role="progressbar"
+                                            style="width: 0%"
+                                            aria-valuenow="0"
+                                            aria-valuemin="0"
+                                            aria-valuemax="100">
+                                        0%
+                                    </div>
+                                </div>
+
+                                <!-- Current Step -->
+                                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                    <strong>Step saat ini:</strong>
+                                    <span id="greeCurrentStep">Inisialisasi...</span>
+                                </div>
+
+                                <!-- Detail Info -->
+                                <p id="greeDetailInfo" class="text-muted small">
+                                    Mohon tunggu, proses automation sedang berjalan...
+                                </p>
+
+                                <!-- Error Message (hidden by default) -->
+                                <div id="greeErrorMessage" class="alert alert-danger d-none" role="alert">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                    <strong>Error:</strong>
+                                    <span id="greeErrorText"></span>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button"
+                                        class="btn btn-secondary"
+                                        id="greeCloseBtn"
+                                        data-bs-dismiss="modal"
+                                        disabled>
+                                    Tutup
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    {% endfor %}
+                     {% endif %}
                 </div>
             </div>
 
         </section>
     </div>
 </div>
+<script>
+    function openImageNewTab(url) {
+        window.open(url, '_blank');
+    }
+
+    function loadImages(button) {
+            const tiketId = button.getAttribute('data-tiket-id');
+
+        }
+
+    // Optional: Tambahkan zoom effect saat hover
+    document.addEventListener('DOMContentLoaded', function () {
+        const images = document.querySelectorAll('.foto-preview');
+        images.forEach(img => {
+            img.addEventListener('mouseenter', function () {
+                this.style.transform = 'scale(1.05)';
+                this.style.transition = 'transform 0.3s ease';
+            });
+            img.addEventListener('mouseleave', function () {
+                this.style.transform = 'scale(1)';
+            });
+        });
+    });
+</script>
+<script>
+    let fsModal;
+    let fsPollingInterval;
+    let currentJobId;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        fsModal = new bootstrap.Modal(document.getElementById('fsProgressModal'));
+    });
+
+    async function mulaiFS(ticketId) {
+
+        if (!confirm('Apakah Anda yakin ingin memulai FS Track untuk tiket ini?')) {
+            return;
+        }
+
+        try {
+
+            resetModalState();
+
+
+            fsModal.show();
+
+
+            const response = await fetch(`/api/v1/create_job?id_ticket=${ticketId}`, {
+                method: 'GET'
+            });
+
+            if (!response.ok) {
+                throw new Error('Gagal memulai job');
+            }
+
+            const data = await response.json();
+            currentJobId = data.job_id;
+
+
+            startPolling(currentJobId);
+
+        } catch (error) {
+            console.error('Error:', error);
+            showErrorState('Terjadi kesalahan saat memulai FS Track');
+        }
+    }
+
+    function startPolling(jobId) {
+
+        fsPollingInterval = setInterval(async () => {
+            try {
+                const response = await fetch(`/api/v1/job_status/${jobId}`);
+
+                if (!response.ok) {
+                    throw new Error('Gagal mendapatkan status');
+                }
+
+                const status = await response.json();
+                updateModalStatus(status);
+
+
+                if (status.status === 'success' || status.status === 'error') {
+                    clearInterval(fsPollingInterval);
+                    document.getElementById('fsCloseBtn').disabled = false;
+
+                    if (status.status === 'success') {
+                        toastr.success('FS Track berhasil dimulai!');
+
+
+                        setTimeout(() => {
+                            location.reload();
+                        }, 3000);
+                    }
+                }
+
+            } catch (error) {
+                console.error('Polling error:', error);
+                clearInterval(fsPollingInterval);
+                showErrorState('Gagal memeriksa status');
+            }
+        }, 2000);
+    }
+
+    function updateModalStatus(status) {
+        const iconDiv = document.getElementById('fsStatusIcon');
+        const messageEl = document.getElementById('fsStatusMessage');
+        const progressBar = document.getElementById('fsProgressBar');
+        const detailInfo = document.getElementById('fsDetailInfo');
+
+
+        progressBar.style.width = status.progress + '%';
+        progressBar.setAttribute('aria-valuenow', status.progress);
+        progressBar.textContent = status.progress + '%';
+
+
+        messageEl.textContent = status.message;
+        detailInfo.textContent = getDetailMessage(status);
+
+
+        if (status.status === 'success') {
+            iconDiv.innerHTML = `
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+            `;
+            progressBar.classList.remove('progress-bar-animated', 'progress-bar-striped');
+            progressBar.classList.add('bg-success');
+
+        } else if (status.status === 'error') {
+            iconDiv.innerHTML = `
+                <i class="bi bi-x-circle-fill text-danger" style="font-size: 4rem;"></i>
+            `;
+            progressBar.classList.remove('progress-bar-animated', 'progress-bar-striped');
+            progressBar.classList.add('bg-danger');
+            toastr.error(status.message);
+
+        } else {
+            // Processing
+            progressBar.classList.add('progress-bar-animated', 'progress-bar-striped');
+        }
+    }
+
+    function getDetailMessage(status) {
+        switch(status.status) {
+            case 'starting':
+                return 'Menghubungkan ke FS Track...';
+            case 'processing':
+                return 'Membuat job baru di sistem FS Track...';
+            case 'success':
+                return 'Job berhasil dibuat! Silakan cek di FS Track.';
+            case 'error':
+                return 'Terjadi kesalahan. Silakan coba lagi.';
+            default:
+                return 'Memproses...';
+        }
+    }
+
+    function resetModalState() {
+        const iconDiv = document.getElementById('fsStatusIcon');
+        const messageEl = document.getElementById('fsStatusMessage');
+        const progressBar = document.getElementById('fsProgressBar');
+        const detailInfo = document.getElementById('fsDetailInfo');
+        const closeBtn = document.getElementById('fsCloseBtn');
+
+        // Reset to initial state
+        iconDiv.innerHTML = `
+            <div class="spinner-border text-primary" style="width: 4rem; height: 4rem;" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        `;
+
+        messageEl.textContent = 'Memulai proses...';
+        progressBar.style.width = '10%';
+        progressBar.setAttribute('aria-valuenow', '10');
+        progressBar.textContent = '10%';
+        progressBar.className = 'progress-bar progress-bar-striped progress-bar-animated';
+        detailInfo.textContent = 'Mohon tunggu sebentar...';
+        closeBtn.disabled = true;
+
+        // Clear any existing polling
+        if (fsPollingInterval) {
+            clearInterval(fsPollingInterval);
+        }
+    }
+
+    function showErrorState(message) {
+        const iconDiv = document.getElementById('fsStatusIcon');
+        const messageEl = document.getElementById('fsStatusMessage');
+        const progressBar = document.getElementById('fsProgressBar');
+        const closeBtn = document.getElementById('fsCloseBtn');
+
+        iconDiv.innerHTML = `
+            <i class="bi bi-x-circle-fill text-danger" style="font-size: 4rem;"></i>
+        `;
+        messageEl.textContent = 'Gagal';
+        progressBar.style.width = '0%';
+        progressBar.classList.remove('progress-bar-animated', 'progress-bar-striped');
+        progressBar.classList.add('bg-danger');
+        closeBtn.disabled = false;
+
+        toastr.error(message);
+    }
+
+    // Cleanup on modal close
+    document.getElementById('fsProgressModal').addEventListener('hidden.bs.modal', function () {
+        if (fsPollingInterval) {
+            clearInterval(fsPollingInterval);
+        }
+    });
+
+    function openImageNewTab(url) {
+        window.open(url, '_blank');
+    }
+</script>
+<script>
+async function mulaiGree(ticketId) {
+    // Buka modal progress
+    const modal = new bootstrap.Modal(document.getElementById('greeProgressModal'));
+    modal.show();
+
+    // Reset state
+    resetGreeModal();
+
+    try {
+        // 1. Start job
+        updateGreeProgress(5, 'Mengirim request...', 'Memulai job automation');
+
+        const startResponse = await fetch(`/api/v1/gree_create_job?id_ticket=${ticketId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!startResponse.ok) {
+            const errorData = await startResponse.json();
+            throw new Error(errorData.detail || 'Gagal memulai job');
+        }
+
+        const startData = await startResponse.json();
+        
+        if (startData.status === 'already_running') {
+            updateGreeProgress(
+                startData.current_progress.progress,
+                'Job sedang berjalan',
+                startData.current_progress.current_step
+            );
+        }
+
+        // 2. Poll status setiap 2 detik
+        const pollInterval = setInterval(async () => {
+            try {
+                const statusResponse = await fetch(`/api/v1/gree_job_status?id_ticket=${ticketId}`);
+                
+                if (!statusResponse.ok) {
+                    throw new Error('Gagal mendapatkan status');
+                }
+
+                const statusData = await statusResponse.json();
+                
+                // Update UI
+                updateGreeProgress(
+                    statusData.progress,
+                    statusData.message,
+                    statusData.current_step
+                );
+
+                // Cek jika selesai
+                if (statusData.status === 'completed') {
+                    clearInterval(pollInterval);
+                    showGreeSuccess();
+                    
+                    // Cleanup status setelah 3 detik
+                    setTimeout(async () => {
+                        await fetch(`/api/v1/gree_job_status?id_ticket=${ticketId}`, {
+                            method: 'DELETE'
+                        });
+                    }, 3000);
+                } 
+                else if (statusData.status === 'failed') {
+                    clearInterval(pollInterval);
+                    showGreeError(statusData.error || 'Proses gagal');
+                }
+
+            } catch (error) {
+                clearInterval(pollInterval);
+                showGreeError(error.message);
+            }
+        }, 2000);
+
+    } catch (error) {
+        showGreeError(error.message);
+    }
+}
+
+// Helper functions untuk Gree modal
+function resetGreeModal() {
+    document.getElementById('greeProgressBar').style.width = '0%';
+    document.getElementById('greeProgressBar').setAttribute('aria-valuenow', '0');
+    document.getElementById('greeProgressBar').textContent = '0%';
+    document.getElementById('greeProgressBar').className = 'progress-bar progress-bar-striped progress-bar-animated bg-warning';
+    
+    document.getElementById('greeStatusIcon').innerHTML = `
+        <div class="spinner-border text-warning" style="width: 4rem; height: 4rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    `;
+    
+    document.getElementById('greeStatusMessage').textContent = 'Memulai proses...';
+    document.getElementById('greeCurrentStep').textContent = 'Inisialisasi...';
+    document.getElementById('greeDetailInfo').textContent = 'Mohon tunggu, proses automation sedang berjalan...';
+    document.getElementById('greeErrorMessage').classList.add('d-none');
+    document.getElementById('greeCloseBtn').disabled = true;
+}
+
+function updateGreeProgress(progress, message, currentStep) {
+    const progressBar = document.getElementById('greeProgressBar');
+    progressBar.style.width = progress + '%';
+    progressBar.setAttribute('aria-valuenow', progress);
+    progressBar.textContent = progress + '%';
+    
+    document.getElementById('greeStatusMessage').textContent = message;
+    document.getElementById('greeCurrentStep').textContent = currentStep;
+    
+    // Update detail info based on progress
+    let detailText = '';
+    if (progress < 30) {
+        detailText = 'Menyiapkan browser dan login...';
+    } else if (progress < 60) {
+        detailText = 'Mengakses sistem GREE...';
+    } else if (progress < 90) {
+        detailText = 'Mengisi data dan upload file...';
+    } else {
+        detailText = 'Menyelesaikan proses...';
+    }
+    document.getElementById('greeDetailInfo').textContent = detailText;
+}
+
+function showGreeSuccess() {
+    document.getElementById('greeStatusIcon').innerHTML = `
+        <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+    `;
+    
+    document.getElementById('greeProgressBar').classList.remove('progress-bar-animated', 'bg-warning');
+    document.getElementById('greeProgressBar').classList.add('bg-success');
+    
+    document.getElementById('greeStatusMessage').textContent = 'Proses Berhasil!';
+    document.getElementById('greeCurrentStep').textContent = 'Selesai';
+    document.getElementById('greeDetailInfo').textContent = 'Automation GREE telah berhasil diselesaikan.';
+    document.getElementById('greeCloseBtn').disabled = false;
+    
+    // Auto close setelah 3 detik
+    setTimeout(() => {
+        bootstrap.Modal.getInstance(document.getElementById('greeProgressModal')).hide();
+        location.reload(); // Refresh halaman
+    }, 3000);
+}
+
+function showGreeError(errorMessage) {
+    document.getElementById('greeStatusIcon').innerHTML = `
+        <i class="bi bi-x-circle-fill text-danger" style="font-size: 4rem;"></i>
+    `;
+    
+    document.getElementById('greeProgressBar').classList.remove('progress-bar-animated', 'bg-warning');
+    document.getElementById('greeProgressBar').classList.add('bg-danger');
+    
+    document.getElementById('greeStatusMessage').textContent = 'Proses Gagal';
+    document.getElementById('greeCurrentStep').textContent = 'Error';
+    
+    const errorDiv = document.getElementById('greeErrorMessage');
+    document.getElementById('greeErrorText').textContent = errorMessage;
+    errorDiv.classList.remove('d-none');
+    
+    document.getElementById('greeCloseBtn').disabled = false;
+}
+</script>
 {% endblock %}

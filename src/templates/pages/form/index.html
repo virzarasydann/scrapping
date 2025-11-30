@@ -65,7 +65,7 @@
 
 <div class="app-content-header">
     <div class="container-fluid d-flex justify-content-between align-items-center">
-       
+
     </div>
 </div>
 
@@ -74,7 +74,7 @@
         <section class="card shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h3 class="mb-3">Form Input Tiket</h3>
-                <a href="{{ url_for('form') }}" class="btn btn-secondary">
+                <a href="{{ url_for('tiket') }}" class="btn btn-secondary">
                     <i class="bi bi-arrow-left me-1"></i> Kembali
                 </a>
             </div>
@@ -85,21 +85,31 @@
                         <!-- Tanggal -->
                         <div class="col-md-4">
                             <label for="tgl" class="form-label">Tanggal</label>
-                            <input type="date" class="form-control" id="tanggal" name="tanggal" value="{{ current_time }}" required>
+                            <input type="date" class="form-control" id="tanggal" name="tanggal" value="{{ current_time }}" >
                         </div>
 
                         <!-- No Tiket -->
                         <div class="col-md-4">
                             <label for="no_tiket" class="form-label">No Tiket</label>
-                            <input type="text" class="form-control" id="no_tiket" name="no_tiket"
-                                placeholder="Isi No Tiket" required>
+                            <input type="text" class="form-control {% if field_errors and 'no_tiket' in field_errors %}is-invalid{% endif %}" id="no_tiket" name="no_tiket"
+                                placeholder="Isi No Tiket" value="{{ formdata.get('no_tiket', '') if formdata else '' }}">
+                                {% if field_errors and 'no_tiket' in field_errors %}
+                                <div class="invalid-feedback">
+                                    {{ field_errors['no_tiket'] }}
+                                </div>
+                                {% endif %}
                         </div>
 
                         <!-- Customer -->
                         <div class="col-md-4">
                             <label for="customer" class="form-label">Customer</label>
-                            <input type="text" class="form-control" id="customer" name="customer"
-                                placeholder="Nama Customer" required>
+                            <input type="text" class="form-control {% if field_errors and 'customer' in field_errors %}is-invalid{% endif %}" id="customer" name="customer"
+                                placeholder="Nama Customer" value="{{ formdata.get('customer', '') if formdata else '' }}">
+                                {% if field_errors and 'customer' in field_errors %}
+                                <div class="invalid-feedback">
+                                    {{ field_errors['customer'] }}
+                                </div>
+                                 {% endif %}
                         </div>
 
                         <!-- Model -->
@@ -125,7 +135,7 @@
                         <!-- Indikasi -->
                         <div class="col-md-4">
                             <label for="indikasi" class="form-label">Indikasi</label>
-                            
+
                             <textarea class="form-control" id="indikasi" name="indikasi" rows="2" placeholder="Indikasi Masalah"></textarea>
                         </div>
 
@@ -135,25 +145,25 @@
                             <textarea class="form-control" id="tindakan" name="tindakan" rows="2" placeholder="Tindakan Perbaikan"></textarea>
                         </div>
 
-                        
+
                         <div class="col-md-6">
                             <label for="before" class="form-label">Before</label>
                             <input type="file" class="form-control file-input" id="before" name="before" accept=".jpg,.jpeg">
                             <div class="file-preview" id="before_preview"></div>
                         </div>
-                        
+
                         <div class="col-md-6">
                             <label for="after" class="form-label">After</label>
                             <input type="file" class="form-control file-input" id="after" name="after" accept=".jpg,.jpeg">
                             <div class="file-preview" id="after_preview"></div>
                         </div>
-                        
+
                         <div class="col-md-6">
                             <label for="serial_number" class="form-label">Serial Number</label>
                             <input type="file" class="form-control file-input" id="serial_number" name="serial_number" accept=".jpg,.jpeg">
                             <div class="file-preview" id="serial_number_preview"></div>
                         </div>
-                        
+
                         <div class="col-md-6">
                             <label for="lokasi_file" class="form-label">Lokasi</label>
                             <input type="file" class="form-control file-input" id="lokasi_file" name="lokasi" accept=".jpg,.jpeg">
@@ -162,7 +172,7 @@
 
 
 
-                        
+
                         <div class="col-md-6">
                             <label for="lokasi" class="form-label">Lokasi</label>
                             <div class="input-group">
@@ -174,8 +184,8 @@
                             </div>
                             <small class="text-muted">Lokasi diisi otomatis dari browser (minta izin).</small>
                         </div>
-                        
-                        
+
+
 
                     </div>
 
@@ -190,6 +200,7 @@
     </div>
 </div>
 
+
 <script>
     document.querySelectorAll('.file-input').forEach(input => {
             input.addEventListener('change', function () {
@@ -199,15 +210,15 @@
                 const parent = this.parentElement;
                 const inputId = this.id;
 
-                
+
                 this.style.display = 'none';
 
-                
+
                 let btnContainer = document.createElement('div');
                 btnContainer.className = 'mt-2 d-flex gap-2';
                 btnContainer.id = inputId + '_btns';
 
-                
+
                 let previewBtn = document.createElement('button');
                 previewBtn.type = 'button';
                 previewBtn.className = 'btn btn-sm btn-primary';
@@ -227,9 +238,9 @@
                 removeBtn.className = 'btn btn-sm btn-danger';
                 removeBtn.textContent = 'Hapus';
                 removeBtn.onclick = () => {
-                    input.value = ''; 
-                    input.style.display = 'block'; 
-                    btnContainer.remove(); 
+                    input.value = '';
+                    input.style.display = 'block';
+                    btnContainer.remove();
                 };
 
                 btnContainer.appendChild(previewBtn);
@@ -270,5 +281,23 @@
     }
 
 </script>
+{% if show_error_toast %}
+<script>
+    var audio = new Audio('/public/audio/notification.ogg');
+    document.addEventListener("DOMContentLoaded", function () {
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": true,
+            "positionClass": "toast-bottom-right",
+            "timeOut": "3000"
+        };
+
+        audio.play()
+        toastr.error("Ada inputan yang salah");
+    });
+</script>
+{% endif %}
+
+
 
 {% endblock %}

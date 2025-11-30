@@ -3,6 +3,7 @@ from datetime import datetime
 
 @dataclass
 class Ticket:
+    no_ticket: str
     customer: str
     model: str
     keluhan: str
@@ -11,6 +12,7 @@ class Ticket:
     after: str
     serial_number: str
     lokasi: str
+    status_gree: int
 
 @dataclass
 class LoginCredentials:

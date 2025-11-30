@@ -1,23 +1,37 @@
+import httpx
 import os
-from pathlib import Path
-import shutil
-from fastapi import APIRouter, Request, Depends, UploadFile, File, Form, status
-from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse, RedirectResponse
+from pydantic import ValidationError
+import uuid
+
+from fastapi import (
+    APIRouter, 
+    Request, 
+    Depends, 
+    UploadFile, 
+    File, 
+    status
+)
+from fastapi.responses import (
+    HTMLResponse, 
+    RedirectResponse
+)
+
 from sqlalchemy.orm import Session
 
-from src.configuration.config import SRC_DIR,GROUP_ID,TOKEN, APP_ENV
+from src.configuration.config import (
+    SRC_DIR,
+    GROUP_ID,
+    TOKEN, 
+    APP_ENV
+)
 from src.configuration.database import get_db
 from src.models.ticket_models import Ticket
 from src.schemas.ticket import TicketCreate
-import uuid
-import httpx
-
-import requests
-from bs4 import BeautifulSoup
 from src.services.fs_track.factory import CodeIgniterServiceFactory
 from src.services.sessions_utils import get_user_id, get_role_id
 from src.services.template_service import templates
+
+
 router = APIRouter(prefix="/tiket", tags=["Tickets"])
 # templates = Jinja2Templates(directory=SRC_DIR / "templates" / "pages")
 
@@ -70,91 +84,6 @@ async def index(request: Request, db: Session = Depends(get_db)):
     )
 
 
-
-# BASE_URL_CI = "https://fs.616263.my.id"
-# CI_USERNAME = "ADMIN1"
-# CI_PASSWORD = "ADMINAC"
-
-# def ci_create_job(ticket):
-#     """
-#     Fungsi untuk login ke CodeIgniter dan kirim data job baru
-#     berdasarkan data tiket dari FastAPI.
-#     """
-#     session = requests.Session()
-
-    
-#     login_page = session.get(f"{BASE_URL_CI}/login")
-#     soup = BeautifulSoup(login_page.text, "html.parser")
-#     csrf_login = soup.find("meta", {"name": "csrf_test_name"})["content"]
-    
-#     # Step 2: Login
-#     login_payload = {
-#         "login": CI_USERNAME,
-#         "password": CI_PASSWORD,
-#         "csrf_test_name": csrf_login
-#     }
-#     login_resp = session.post(f"{BASE_URL_CI}/login", data=login_payload)
-#     print("[DEBUG] After login URL:", login_resp.url)
-#     print("[DEBUG] After login snippet:", login_resp.text[:300])
-
-#     print("\n[DEBUG] Cookies setelah login:")
-#     for cookie in session.cookies:
-#         print(f"  {cookie.name} = {cookie.value[:50]}...")
-#     # Step 3: Ambil token halaman tambah job
-#     add_page = session.get(f"{BASE_URL_CI}/admin/jobs/add")
-    
-#     soup_add = BeautifulSoup(add_page.text, "html.parser")
-#     for inp in soup_add.find_all(["input", "textarea", "select"]):
-#         name = inp.get("name")
-#         if name:
-#             print("Field:", name)
-#     csrf_add = soup_add.find("meta", {"name": "csrf_test_name"})["content"]
-
-#     # Step 4: Kirim data job
-#     # payload = {
-#     #     # "customer_name": ticket.customer or "testing",
-#     #     "customer_address": "Jl. Test Integration No.1",
-#     #     "customer_phone_number": "081234567890",
-#     #     "ac_unit_name": ticket.model or "testing",
-#     #     "id_service_type": "24",
-#     #     "description": ticket.keluhan or "testing",
-#     #     "team": "AhliAC",
-#     #     "accessor": "Wahyu Nugraha",
-#     #     "start_date": str(ticket.tanggal),
-#     #     "end_date": str(ticket.tanggal),
-#     #     "csrf_test_name": csrf_add,
-#     #     "save": "1"
-#     # }
-
-#     payload = {
-#         "csrf_test_name": csrf_add,
-        
-#         # "id_customer": "1",                              
-#         "customer_name" : ticket.customer,
-#         "customer_address": "Jl. Test Integration No.1",
-#         "customer_phone_number": "081234567890",
-        
-#         "id_ac_unit": "156",                               
-#         "id_service_type": "24",
-#         "description": ticket.keluhan or "testing",
-#         "team": "AhliAC",
-#         "accessor": "Wahyu Nugraha",
-#         "start_date": str(ticket.tanggal),
-#         "end_date": str(ticket.tanggal),
-#         "save": "1"                                     
-#     }
-
-#     response = session.post(f"{BASE_URL_CI}/admin/jobs/add", data=payload)
-    
-#     print("\n[DEBUG] Payload yang dikirim:")
-#     for k, v in payload.items():
-#         print(f"  {k}: {v}")
-#     print("[CI] Status:", response.status_code)
-#     print("[CI] URL:", response.url)
-
-#     return response.status_code
-
-
 async def ci_create_job(ticket: Ticket) -> int:
     BASE_URL_CI = "https://fs.616263.my.id"
     CI_USERNAME = "ADMIN1"
@@ -169,13 +98,71 @@ async def ci_create_job(ticket: Ticket) -> int:
 @router.post("", name="ticket_post")
 async def ticket_create(
     request: Request,
-    data: TicketCreate = Depends(TicketCreate.as_form),
     before: UploadFile = File(None),
     after: UploadFile = File(None),
     serial_number: UploadFile = File(None),
     lokasi: UploadFile = File(None),
     db: Session = Depends(get_db),
 ):
+    
+    try:
+        form = await request.form()
+        
+        
+        data = TicketCreate(
+            tanggal=str(form.get("tanggal") or ""),
+            no_tiket=str(form.get("no_tiket") or ""),
+            customer=str(form.get("customer") or ""),
+            model=str(form.get("model")) if form.get("model") else None,
+            keluhan=str(form.get("keluhan")) if form.get("keluhan") else None,
+            teknisi=str(form.get("teknisi")) if form.get("teknisi") else None,
+            indikasi=str(form.get("indikasi")) if form.get("indikasi") else None,
+            tindakan=str(form.get("tindakan")) if form.get("tindakan") else None,
+            lokasi_koordinat=str(form.get("lokasi_koordinat")) if form.get("lokasi_koordinat") else None
+        )
+
+    except ValidationError as e:
+        field_errors = {}
+        for err in e.errors():
+            field_name = err["loc"][0]  
+            field_errors[field_name] = err["msg"]
+        
+        print("=== VALIDATION ERRORS ===")
+        print(field_errors)
+        print("=========================")
+
+        return templates.TemplateResponse(
+            "form/index.html",
+            {
+                "request": request,
+                "field_errors": field_errors,
+                "show_error_toast": True,
+                "formdata": dict(form),
+                "current_time": form.get("tanggal", "")
+            },
+            status_code=422
+        )
+    
+    except Exception as e:
+        
+        print(f"=== UNEXPECTED ERROR ===")
+        print(f"Error type: {type(e).__name__}")
+        print(f"Error message: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        print("========================")
+        
+        return templates.TemplateResponse(
+            "form/index.html",
+            {
+                "request": request,
+                "errors": [f"Terjadi kesalahan: {str(e)}"],
+                "formdata": {}
+            },
+            status_code=500
+        )
+
+    
     BASE_URL = "http://192.206.117.191:8000/public"
 
     def file_url(filename: str) -> str:
@@ -183,14 +170,12 @@ async def ticket_create(
             return f"{BASE_URL}/{filename}"
         return ""
 
-    
     user_id = get_user_id(request)
     before_name = save_upload_file(before)
     after_name = save_upload_file(after)
     serial_name = save_upload_file(serial_number)
     lokasi_name = save_upload_file(lokasi)
 
-   
     ticket = Ticket(
         tanggal=data.tanggal,
         no_tiket=data.no_tiket,
@@ -212,14 +197,7 @@ async def ticket_create(
     db.commit()
     db.refresh(ticket)
 
-   
-    try:
-        ci_status = await ci_create_job(ticket)
-        print(f"[+] Job CI status: {ci_status}")
-    except Exception as e:
-        print("❌ Gagal integrasi ke CI:", e)
-
-   
+    # Kirim ke Fonnte
     files = [
         ("Before", before_name),
         ("After", after_name),
