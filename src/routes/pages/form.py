@@ -16,7 +16,7 @@ router = APIRouter(prefix="/form", tags=["Pages"])
 @router.get("", response_class=HTMLResponse, name="form")
 async def inbox(request: Request):
     
-    print(get_user_id(request))
+    
     today = date.today().isoformat()
     return templates.TemplateResponse(
         "form/index.html",

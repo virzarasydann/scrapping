@@ -2,11 +2,11 @@
 
 from sqlalchemy.orm import Session
 
-from src.models.ticket_models import Ticket 
+from src.models.ticket_models import Ticket
 from src.schemas.ticket import TicketCreate
 
 
-class TicketORMService:
+class TicketRepository:
     def create_ticket(self, db: Session, data: TicketCreate, user_id: int):
         ticket = Ticket(
             user_id=user_id,
@@ -29,8 +29,18 @@ class TicketORMService:
     def get_all_tickets(self, db: Session):
         return db.query(Ticket).order_by(Ticket.id.desc()).all()
 
-    def get_ticket_by_id(self, db: Session, ticket_id: int)->Ticket:
+    def get_ticket_by_id(self, db: Session, ticket_id: int) -> Ticket:
         return db.query(Ticket).filter(Ticket.id == ticket_id).first()
+
+    def set_status_gree(self, db: Session, ticket_id: int, status: int):
+        ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
+        ticket.status_gree = status
+        db.commit()
+
+    def set_status_fs(self, db: Session, ticket_id: int, status: int):
+        ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
+        ticket.status_fs = status
+        db.commit()
 
     def update_ticket(self, db: Session, ticket_id: int, data: TicketCreate):
         ticket = self.get_ticket_by_id(db, ticket_id)

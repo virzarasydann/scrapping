@@ -1,21 +1,27 @@
 from abc import ABC, abstractmethod
+
 import requests
-from src.models.fs_track.domain_models import Ticket
+
+from src.schemas.fs_track.fs_request_schema import FsRequestSchema as FsTicket
+
 
 class ICSRFHandler(ABC):
     @abstractmethod
     def get_csrf_token(self, session: requests.Session, url: str) -> str:
         pass
 
+
 class IAuthenticator(ABC):
     @abstractmethod
     def login(self, session: requests.Session) -> bool:
         pass
 
+
 class IJobCreator(ABC):
     @abstractmethod
-    def create_job(self, session: requests.Session, ticket: Ticket) -> int:
+    def create_job(self, session: requests.Session, ticket: FsTicket) -> int:
         pass
+
 
 class IGetJob(ABC):
     @abstractmethod
@@ -25,4 +31,3 @@ class IGetJob(ABC):
     @abstractmethod
     def get_last_job_id(self, session: requests.Session) -> list:
         pass
-

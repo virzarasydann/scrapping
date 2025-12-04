@@ -2,6 +2,9 @@
     "input_no_work_order": "div.col-lg-2 input.form-control[type='text']",
     "button_cari": "//button[contains(@class, 'Button_blue__') and contains(text(), 'Cari')]",
     "icon_edit": "div[style*='cursor: pointer'] svg",
-    "button_modifikasi": "//div[contains(@class, 'mt-1') and contains(@class, 'col-12')]//button[contains(@class, 'Button_button') and normalize-space()='Modifikasi']"
-    
+    "button_modifikasi": "//div[contains(@class, 'mt-1') and contains(@class, 'col-12')]//button[contains(@class, 'Button_button') and normalize-space()='Modifikasi']",
+    "button_visit": "//button[contains(@class, 'Button_button') and contains(@class, 'Button_white') and normalize-space()='Visit']",
+    "display_next_step": "//div[contains(@class, 'components_box')]",
+    "button_save_in_next_step": "//button[contains(@class, 'Button_button') and contains(@class, 'Button_blue') and normalize-space()='Simpan']"
+
 }

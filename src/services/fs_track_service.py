@@ -2,13 +2,13 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from src.models.fs_track.domain_models import Ticket as FsTicket
-from src.services.ticket_orm_service import TicketORMService
+from src.schemas.fs_track.fs_request_schema import FsRequestSchema as FsTicket
 
+from src.repository.ticket_repository import TicketRepository
 
 class FsTrackService:
     def __init__(self):
-        self.orm = TicketORMService()
+        self.orm = TicketRepository()
 
     def get_ticket_by_id(self, db: Session, ticket_id: int) -> FsTicket:
         """Ambil ticket SQLAlchemy → konversi ke FsTrack Ticket (dataclass)."""
@@ -18,8 +18,8 @@ class FsTrackService:
         if not orm_ticket:
             raise HTTPException(status_code=404, detail="Ticket not found")
 
-        # Mapping ORM → dataclass domain model
         return FsTicket(
+            no_ticket=orm_ticket.no_tiket,
             customer=orm_ticket.customer,
             model=orm_ticket.model,
             keluhan=orm_ticket.keluhan,
@@ -28,4 +28,5 @@ class FsTrackService:
             after=orm_ticket.after,
             serial_number=orm_ticket.serial_number,
             lokasi=orm_ticket.lokasi,
+            status_fs=orm_ticket.status_fs,
         )

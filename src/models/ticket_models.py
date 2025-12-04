@@ -23,7 +23,7 @@ class Ticket(Base):
     serial_number = Column(String(255), nullable=True)                
     lokasi = Column(String(255), nullable=True)
     lokasi_koordinat = Column(String(255), nullable=True)            
-    status_fs = Column(Integer, nullable=False)
-    status_gree = Column(Integer, nullable=False)
+    status_fs = Column(Integer, nullable=True)
+    status_gree = Column(Integer, nullable=True)
 
     

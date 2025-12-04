@@ -12,7 +12,7 @@ from src.services.gree.gree_service import GreeService
 router = APIRouter(prefix="/api/v1", tags=["/api/v1"])
 logger = logging.getLogger(__name__)
 
-# Dictionary untuk menyimpan status job (bisa diganti dengan Redis untuk production)
+
 job_status = {}
 
 
@@ -37,33 +37,27 @@ def process_gree_job(id_ticket: int, db: Session):
         )
 
         gree_service = GreeService()
-        ticket = gree_service.get_ticket_by_id(id_ticket, db)
+        gree_ticket, orm_ticket = gree_service.get_ticket_by_id(id_ticket, db)
 
-        # Update status: Membuat instance Gree
         update_job_status(
             id_ticket, "processing", "Membuat instance Gree", 10, "Setup Browser"
         )
 
-        # Buat instance Gree dengan callback untuk update status
-        gree = Gree(ticket, headless=True)
+        gree = Gree(gree_ticket, headless=True)
 
-        # Set callback function untuk tracking progress dari dalam Gree.run()
         def status_callback(step: str, progress: int):
             update_job_status(
                 id_ticket, "processing", f"Menjalankan: {step}", progress, step
             )
 
-        # Attach callback ke instance gree
         gree.status_callback = status_callback
 
-        # Jalankan automation dengan method run()
         update_job_status(
             id_ticket, "processing", "Menjalankan automation", 20, "Memulai run()"
         )
 
         gree.run()
 
-        # Update status: Selesai
         update_job_status(
             id_ticket,
             "completed",
@@ -74,9 +68,9 @@ def process_gree_job(id_ticket: int, db: Session):
 
         logger.info(f"Job {id_ticket} completed successfully")
         try:
-            ticket.status_gree = 1
+            orm_ticket.status_gree = 1
             db.commit()
-            db.refresh(ticket)
+            db.refresh(orm_ticket)
             logger.info(
                 f"Job {id_ticket} completed successfully - status_gree updated to 1"
             )
@@ -87,7 +81,6 @@ def process_gree_job(id_ticket: int, db: Session):
             db.rollback()
 
     except Exception as e:
-        # Update status: Error
         current_progress = job_status.get(id_ticket, {}).get("progress", 0)
         job_status[id_ticket] = {
             "status": "failed",
@@ -99,7 +92,6 @@ def process_gree_job(id_ticket: int, db: Session):
         }
         logger.error(f"Job {id_ticket} failed: {str(e)}")
     finally:
-        # Tutup browser
         try:
             if "gree" in locals():
                 gree.driver.quit()

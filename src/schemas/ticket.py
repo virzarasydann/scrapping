@@ -12,6 +12,8 @@ class TicketCreate(BaseModel):
     indikasi: Optional[str] = None
     tindakan: Optional[str] = None
     lokasi_koordinat: Optional[str] = None
+    status_fs: bool = False
+    status_gree: bool = False
 
     @field_validator("tanggal", "no_tiket", "customer")
     def required_not_empty(cls, v, field):

@@ -27,7 +27,7 @@ from src.configuration.config import (
 from src.configuration.database import get_db
 from src.models.ticket_models import Ticket
 from src.schemas.ticket import TicketCreate
-from src.services.fs_track.factory import CodeIgniterServiceFactory
+
 from src.services.sessions_utils import get_user_id, get_role_id
 from src.services.template_service import templates
 
@@ -38,13 +38,7 @@ router = APIRouter(prefix="/tiket", tags=["Tickets"])
 PUBLIC_DIR = SRC_DIR / "public"
 os.makedirs(PUBLIC_DIR, exist_ok=True)
 
-# @router.get("", response_class=HTMLResponse, name="tiket")
-# async def ticket_index(request: Request):
-   
-#     return templates.TemplateResponse(
-#         "tiket/index.html",
-#         {"request": request}
-#     )
+
 
 def save_upload_file(file: UploadFile | None) -> str | None:
     if not file:
@@ -84,16 +78,7 @@ async def index(request: Request, db: Session = Depends(get_db)):
     )
 
 
-async def ci_create_job(ticket: Ticket) -> int:
-    BASE_URL_CI = "https://fs.616263.my.id"
-    CI_USERNAME = "ADMIN1"
-    CI_PASSWORD = "ADMINAC"
-    
-    service = CodeIgniterServiceFactory.create_service(
-        BASE_URL_CI, CI_USERNAME, CI_PASSWORD
-    )
-    
-    return await service.create_job_from_ticket(ticket)
+
 
 @router.post("", name="ticket_post")
 async def ticket_create(
@@ -118,7 +103,9 @@ async def ticket_create(
             teknisi=str(form.get("teknisi")) if form.get("teknisi") else None,
             indikasi=str(form.get("indikasi")) if form.get("indikasi") else None,
             tindakan=str(form.get("tindakan")) if form.get("tindakan") else None,
-            lokasi_koordinat=str(form.get("lokasi_koordinat")) if form.get("lokasi_koordinat") else None
+            lokasi_koordinat=str(form.get("lokasi_koordinat")) if form.get("lokasi_koordinat") else None,
+            status_fs=False,
+            status_gree=False
         )
 
     except ValidationError as e:
@@ -190,7 +177,9 @@ async def ticket_create(
         after=after_name,
         serial_number=serial_name,
         lokasi=lokasi_name,
-        user_id=user_id
+        user_id=user_id,
+        status_fs=data.status_fs,
+        status_gree=data.status_gree
     )
 
     db.add(ticket)

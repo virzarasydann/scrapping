@@ -113,12 +113,14 @@
                                 <td>
                                        <button type="button"
                                                class="btn btn-sm btn-success"
-                                               onclick="mulaiFS({{ tiket.id }})">
+                                               onclick="mulaiFS({{ tiket.id }})" {% if tiket.status_fs == 1 %} disabled {% endif %}>
+
                                            <i class="bi bi-play-circle"></i> Mulai FS
                                        </button>
                                        <button type="button"
                                                 class="btn btn-sm btn-warning"
-                                                onclick="mulaiGree({{ tiket.id }})">
+                                                onclick="mulaiGree({{ tiket.id }}) " {% if tiket.status_gree == 1 %} disabled {% endif %}>
+
                                             <i class="bi bi-cloud-upload"></i> Mulai Gree
                                         </button>
                                    </td>
@@ -503,6 +505,7 @@
     });
 </script>
 <script>
+    var audio = new Audio('/public/audio/notification.ogg');
     let fsModal;
     let fsPollingInterval;
     let currentJobId;
@@ -565,7 +568,7 @@
 
                     if (status.status === 'success') {
                         toastr.success('FS Track berhasil dimulai!');
-
+                        audio.play()
 
                         setTimeout(() => {
                             location.reload();
@@ -691,165 +694,165 @@
     }
 </script>
 <script>
-async function mulaiGree(ticketId) {
-    // Buka modal progress
-    const modal = new bootstrap.Modal(document.getElementById('greeProgressModal'));
-    modal.show();
+    async function mulaiGree(ticketId) {
+        // Buka modal progress
+        const modal = new bootstrap.Modal(document.getElementById('greeProgressModal'));
+        modal.show();
 
-    // Reset state
-    resetGreeModal();
+        // Reset state
+        resetGreeModal();
 
-    try {
-        // 1. Start job
-        updateGreeProgress(5, 'Mengirim request...', 'Memulai job automation');
+        try {
+            // 1. Start job
+            updateGreeProgress(5, 'Mengirim request...', 'Memulai job automation');
 
-        const startResponse = await fetch(`/api/v1/gree_create_job?id_ticket=${ticketId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!startResponse.ok) {
-            const errorData = await startResponse.json();
-            throw new Error(errorData.detail || 'Gagal memulai job');
-        }
-
-        const startData = await startResponse.json();
-        
-        if (startData.status === 'already_running') {
-            updateGreeProgress(
-                startData.current_progress.progress,
-                'Job sedang berjalan',
-                startData.current_progress.current_step
-            );
-        }
-
-        // 2. Poll status setiap 2 detik
-        const pollInterval = setInterval(async () => {
-            try {
-                const statusResponse = await fetch(`/api/v1/gree_job_status?id_ticket=${ticketId}`);
-                
-                if (!statusResponse.ok) {
-                    throw new Error('Gagal mendapatkan status');
+            const startResponse = await fetch(`/api/v1/gree_create_job?id_ticket=${ticketId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
                 }
+            });
 
-                const statusData = await statusResponse.json();
-                
-                // Update UI
+            if (!startResponse.ok) {
+                const errorData = await startResponse.json();
+                throw new Error(errorData.detail || 'Gagal memulai job');
+            }
+
+            const startData = await startResponse.json();
+
+            if (startData.status === 'already_running') {
                 updateGreeProgress(
-                    statusData.progress,
-                    statusData.message,
-                    statusData.current_step
+                    startData.current_progress.progress,
+                    'Job sedang berjalan',
+                    startData.current_progress.current_step
                 );
-
-                // Cek jika selesai
-                if (statusData.status === 'completed') {
-                    clearInterval(pollInterval);
-                    showGreeSuccess();
-                    
-                    // Cleanup status setelah 3 detik
-                    setTimeout(async () => {
-                        await fetch(`/api/v1/gree_job_status?id_ticket=${ticketId}`, {
-                            method: 'DELETE'
-                        });
-                    }, 3000);
-                } 
-                else if (statusData.status === 'failed') {
-                    clearInterval(pollInterval);
-                    showGreeError(statusData.error || 'Proses gagal');
-                }
-
-            } catch (error) {
-                clearInterval(pollInterval);
-                showGreeError(error.message);
             }
-        }, 2000);
 
-    } catch (error) {
-        showGreeError(error.message);
+            // 2. Poll status setiap 2 detik
+            const pollInterval = setInterval(async () => {
+                try {
+                    const statusResponse = await fetch(`/api/v1/gree_job_status?id_ticket=${ticketId}`);
+
+                    if (!statusResponse.ok) {
+                        throw new Error('Gagal mendapatkan status');
+                    }
+
+                    const statusData = await statusResponse.json();
+
+                    // Update UI
+                    updateGreeProgress(
+                        statusData.progress,
+                        statusData.message,
+                        statusData.current_step
+                    );
+
+                    // Cek jika selesai
+                    if (statusData.status === 'completed') {
+                        clearInterval(pollInterval);
+                        showGreeSuccess();
+
+                        // Cleanup status setelah 3 detik
+                        setTimeout(async () => {
+                            await fetch(`/api/v1/gree_job_status?id_ticket=${ticketId}`, {
+                                method: 'DELETE'
+                            });
+                        }, 3000);
+                    }
+                    else if (statusData.status === 'failed') {
+                        clearInterval(pollInterval);
+                        showGreeError(statusData.error || 'Proses gagal');
+                    }
+
+                } catch (error) {
+                    clearInterval(pollInterval);
+                    showGreeError(error.message);
+                }
+            }, 2000);
+
+        } catch (error) {
+            showGreeError(error.message);
+        }
     }
-}
 
-// Helper functions untuk Gree modal
-function resetGreeModal() {
-    document.getElementById('greeProgressBar').style.width = '0%';
-    document.getElementById('greeProgressBar').setAttribute('aria-valuenow', '0');
-    document.getElementById('greeProgressBar').textContent = '0%';
-    document.getElementById('greeProgressBar').className = 'progress-bar progress-bar-striped progress-bar-animated bg-warning';
-    
-    document.getElementById('greeStatusIcon').innerHTML = `
-        <div class="spinner-border text-warning" style="width: 4rem; height: 4rem;" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-    `;
-    
-    document.getElementById('greeStatusMessage').textContent = 'Memulai proses...';
-    document.getElementById('greeCurrentStep').textContent = 'Inisialisasi...';
-    document.getElementById('greeDetailInfo').textContent = 'Mohon tunggu, proses automation sedang berjalan...';
-    document.getElementById('greeErrorMessage').classList.add('d-none');
-    document.getElementById('greeCloseBtn').disabled = true;
-}
+    // Helper functions untuk Gree modal
+    function resetGreeModal() {
+        document.getElementById('greeProgressBar').style.width = '0%';
+        document.getElementById('greeProgressBar').setAttribute('aria-valuenow', '0');
+        document.getElementById('greeProgressBar').textContent = '0%';
+        document.getElementById('greeProgressBar').className = 'progress-bar progress-bar-striped progress-bar-animated bg-warning';
 
-function updateGreeProgress(progress, message, currentStep) {
-    const progressBar = document.getElementById('greeProgressBar');
-    progressBar.style.width = progress + '%';
-    progressBar.setAttribute('aria-valuenow', progress);
-    progressBar.textContent = progress + '%';
-    
-    document.getElementById('greeStatusMessage').textContent = message;
-    document.getElementById('greeCurrentStep').textContent = currentStep;
-    
-    // Update detail info based on progress
-    let detailText = '';
-    if (progress < 30) {
-        detailText = 'Menyiapkan browser dan login...';
-    } else if (progress < 60) {
-        detailText = 'Mengakses sistem GREE...';
-    } else if (progress < 90) {
-        detailText = 'Mengisi data dan upload file...';
-    } else {
-        detailText = 'Menyelesaikan proses...';
+        document.getElementById('greeStatusIcon').innerHTML = `
+            <div class="spinner-border text-warning" style="width: 4rem; height: 4rem;" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        `;
+
+        document.getElementById('greeStatusMessage').textContent = 'Memulai proses...';
+        document.getElementById('greeCurrentStep').textContent = 'Inisialisasi...';
+        document.getElementById('greeDetailInfo').textContent = 'Mohon tunggu, proses automation sedang berjalan...';
+        document.getElementById('greeErrorMessage').classList.add('d-none');
+        document.getElementById('greeCloseBtn').disabled = true;
     }
-    document.getElementById('greeDetailInfo').textContent = detailText;
-}
 
-function showGreeSuccess() {
-    document.getElementById('greeStatusIcon').innerHTML = `
-        <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
-    `;
-    
-    document.getElementById('greeProgressBar').classList.remove('progress-bar-animated', 'bg-warning');
-    document.getElementById('greeProgressBar').classList.add('bg-success');
-    
-    document.getElementById('greeStatusMessage').textContent = 'Proses Berhasil!';
-    document.getElementById('greeCurrentStep').textContent = 'Selesai';
-    document.getElementById('greeDetailInfo').textContent = 'Automation GREE telah berhasil diselesaikan.';
-    document.getElementById('greeCloseBtn').disabled = false;
-    
-    // Auto close setelah 3 detik
-    setTimeout(() => {
-        bootstrap.Modal.getInstance(document.getElementById('greeProgressModal')).hide();
-        location.reload(); // Refresh halaman
-    }, 3000);
-}
+    function updateGreeProgress(progress, message, currentStep) {
+        const progressBar = document.getElementById('greeProgressBar');
+        progressBar.style.width = progress + '%';
+        progressBar.setAttribute('aria-valuenow', progress);
+        progressBar.textContent = progress + '%';
 
-function showGreeError(errorMessage) {
-    document.getElementById('greeStatusIcon').innerHTML = `
-        <i class="bi bi-x-circle-fill text-danger" style="font-size: 4rem;"></i>
-    `;
-    
-    document.getElementById('greeProgressBar').classList.remove('progress-bar-animated', 'bg-warning');
-    document.getElementById('greeProgressBar').classList.add('bg-danger');
-    
-    document.getElementById('greeStatusMessage').textContent = 'Proses Gagal';
-    document.getElementById('greeCurrentStep').textContent = 'Error';
-    
-    const errorDiv = document.getElementById('greeErrorMessage');
-    document.getElementById('greeErrorText').textContent = errorMessage;
-    errorDiv.classList.remove('d-none');
-    
-    document.getElementById('greeCloseBtn').disabled = false;
-}
+        document.getElementById('greeStatusMessage').textContent = message;
+        document.getElementById('greeCurrentStep').textContent = currentStep;
+
+        // Update detail info based on progress
+        let detailText = '';
+        if (progress < 30) {
+            detailText = 'Menyiapkan browser dan login...';
+        } else if (progress < 60) {
+            detailText = 'Mengakses sistem GREE...';
+        } else if (progress < 90) {
+            detailText = 'Mengisi data dan upload file...';
+        } else {
+            detailText = 'Menyelesaikan proses...';
+        }
+        document.getElementById('greeDetailInfo').textContent = detailText;
+    }
+
+    function showGreeSuccess() {
+        document.getElementById('greeStatusIcon').innerHTML = `
+            <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+        `;
+
+        document.getElementById('greeProgressBar').classList.remove('progress-bar-animated', 'bg-warning');
+        document.getElementById('greeProgressBar').classList.add('bg-success');
+
+        document.getElementById('greeStatusMessage').textContent = 'Proses Berhasil!';
+        document.getElementById('greeCurrentStep').textContent = 'Selesai';
+        document.getElementById('greeDetailInfo').textContent = 'Automation GREE telah berhasil diselesaikan.';
+        document.getElementById('greeCloseBtn').disabled = false;
+
+        // Auto close setelah 3 detik
+        setTimeout(() => {
+            bootstrap.Modal.getInstance(document.getElementById('greeProgressModal')).hide();
+            location.reload(); // Refresh halaman
+        }, 3000);
+    }
+
+    function showGreeError(errorMessage) {
+        document.getElementById('greeStatusIcon').innerHTML = `
+            <i class="bi bi-x-circle-fill text-danger" style="font-size: 4rem;"></i>
+        `;
+
+        document.getElementById('greeProgressBar').classList.remove('progress-bar-animated', 'bg-warning');
+        document.getElementById('greeProgressBar').classList.add('bg-danger');
+
+        document.getElementById('greeStatusMessage').textContent = 'Proses Gagal';
+        document.getElementById('greeCurrentStep').textContent = 'Error';
+
+        const errorDiv = document.getElementById('greeErrorMessage');
+        document.getElementById('greeErrorText').textContent = errorMessage;
+        errorDiv.classList.remove('d-none');
+
+        document.getElementById('greeCloseBtn').disabled = false;
+    }
 </script>
 {% endblock %}

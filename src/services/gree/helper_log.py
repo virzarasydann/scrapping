@@ -27,4 +27,5 @@ class SeleniumHelper:
             return element
         except Exception as e:
             self.log(f"ERROR elemen tidak ditemukan: {description} | {e}")
-            raise
+            error_msg = f"ERROR elemen tidak ditemukan: {description} atau Foto sudah terupload, silahkan dicek kembali"
+            raise Exception(error_msg) from e

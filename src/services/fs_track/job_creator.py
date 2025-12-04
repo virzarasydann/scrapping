@@ -4,8 +4,8 @@ import os
 import aiohttp
 from aiohttp import FormData
 
-from src.models.fs_track.domain_models import Ticket
 from src.models.fs_track.interfaces import ICSRFHandler, IJobCreator
+from src.schemas.fs_track.fs_request_schema import FsRequestSchema as FsTicket
 from src.services.fs_track.get_job import GetJob
 
 
@@ -14,7 +14,7 @@ class JobCreator(IJobCreator):
         self.base_url = base_url
         self.csrf_handler = csrf_handler
 
-    async def create_job(self, session: aiohttp.ClientSession, ticket: Ticket) -> int:
+    async def create_job(self, session: aiohttp.ClientSession, ticket: FsTicket) -> int:
         csrf_token = await self.csrf_handler.get_csrf_token(
             session, f"{self.base_url}/admin/jobs/add"
         )
@@ -32,7 +32,7 @@ class JobCreator(IJobCreator):
             return response.status
 
     async def create_job_detail(
-        self, session: aiohttp.ClientSession, ticket: Ticket
+        self, session: aiohttp.ClientSession, ticket: FsTicket
     ) -> int:
         get_job = GetJob(self.base_url)
         last_id = await get_job.get_last_job_id(session)
@@ -57,7 +57,7 @@ class JobCreator(IJobCreator):
 
             return response.status
 
-    def _build_payload(self, ticket: Ticket, csrf_token: str) -> dict:
+    def _build_payload(self, ticket: FsTicket, csrf_token: str) -> dict:
         return {
             "csrf_test_name": csrf_token,
             "customer_name": ticket.customer,
@@ -65,7 +65,7 @@ class JobCreator(IJobCreator):
             "customer_phone_number": "081234567890",
             "id_ac_unit": "156",
             "id_service_type": "24",
-            "description": ticket.keluhan or "testing",
+            "description": f"{ticket.keluhan}\n{ticket.no_ticket}",
             "team": "AhliAC",
             "accessor": "Wahyu Nugraha",
             "start_date": str(ticket.tanggal),
@@ -74,7 +74,7 @@ class JobCreator(IJobCreator):
         }
 
     def _payload_jobs_detail(
-        self, ticket: Ticket, csrf_token: str, jobs_id: int
+        self, ticket: FsTicket, csrf_token: str, jobs_id: int
     ) -> FormData:
         form = FormData()
 

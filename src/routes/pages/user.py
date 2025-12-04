@@ -3,7 +3,7 @@ from fastapi import APIRouter, Request, Depends, Form, status
 from fastapi.templating import Jinja2Templates
 from src.configuration.config import SRC_DIR
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
-from src.configuration.database import get_db, get_db_client
+from src.configuration.database import get_db
 from sqlalchemy.orm import Session
 from src.models.listeners_models import Listener
 from src.models.user_models import User
