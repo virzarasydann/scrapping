@@ -42,6 +42,13 @@ class Gree(SeleniumHelper):
             options.add_argument("--disable-dev-shm-usage")
             options.add_argument("--window-size=1920,1080")
 
+            options.add_argument("--disable-extensions")
+            options.add_argument("--disable-logging")
+            options.add_argument("--disable-dev-tools")
+            options.add_argument("--disable-blink-features=AutomationControlled")
+            options.add_argument("--disable-web-security")
+            options.add_argument("--disable-features=VizDisplayCompositor")
+
         self.driver = webdriver.Chrome(options=options)
         self.wait = WebDriverWait(self.driver, 20)
         self.ticket = ticket
@@ -191,19 +198,19 @@ class Gree(SeleniumHelper):
                 btn.click()
                 self.log("Berhasil klik tombol Upload")
 
-               
+
                 self.wait_for(
                     description="Menunggu modal tertutup",
                     condition=EC.invisibility_of_element_located(
                         (By.CSS_SELECTOR, ".modal-footer")
                     )
                 )
-                time.sleep(1) 
+                time.sleep(1)
                 return
 
     def click_serial_number(self, tipe: str = "Indoor"):
-        
-        time.sleep(1)  
+
+        time.sleep(1)
 
         containers = self.wait_for(
             description="Mencari containers input-style-1",
