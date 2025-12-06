@@ -81,7 +81,7 @@ class JobCreator(IJobCreator):
         form.add_field("csrf_test_name", csrf_token)
         form.add_field("id_job_detail", str(jobs_id))
         form.add_field("id_job", str(jobs_id))
-        form.add_field("description", "-")
+        form.add_field("description", f"{ticket.keluhan}\n{ticket.no_ticket}")
         form.add_field("technician_name", "test")
         form.add_field("id_technician", "41")
         form.add_field("job_status", "-")

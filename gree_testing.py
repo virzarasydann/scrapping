@@ -9,7 +9,7 @@ def main():
     print("=== SCRIPT DIMULAI ===")
 
     ticket = GreeTicket(
-        no_ticket="JKB-251204-0001-01",
+        no_ticket="JKA-251206-0002-01",
         customer="John Doe",
         model="AC Deluxe Model X",
         keluhan="Tidak dingin",

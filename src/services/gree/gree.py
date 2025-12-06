@@ -168,11 +168,9 @@ class Gree(SeleniumHelper):
                 (By.CSS_SELECTOR, ".modal-footer button")
             ),
         )
-
         for btn in buttons:
             classes = btn.get_attribute("class")
             text = btn.text.strip()
-
             if "Button_blue__" in classes and text == "Upload":
                 file_input = self.wait_for(
                     description=f"File input di {tipe}",
@@ -180,32 +178,39 @@ class Gree(SeleniumHelper):
                         (By.CSS_SELECTOR, "input[type='file'][accept='image/*']")
                     ),
                 )
-
                 self.driver.execute_script(
                     """
-                    arguments[0].style.display = 'block';
-                    arguments[0].style.visibility = 'visible';
-                """,
+                   arguments[0].style.display = 'block';
+                   arguments[0].style.visibility = 'visible';
+               """,
                     file_input,
                 )
-
                 file_input.send_keys(
                     os.path.abspath(f"{PUBLIC_DIR}/{file_path.serial_number}")
                 )
-
                 btn.click()
                 self.log("Berhasil klik tombol Upload")
 
+               
+                self.wait_for(
+                    description="Menunggu modal tertutup",
+                    condition=EC.invisibility_of_element_located(
+                        (By.CSS_SELECTOR, ".modal-footer")
+                    )
+                )
+                time.sleep(1) 
                 return
 
     def click_serial_number(self, tipe: str = "Indoor"):
+        
+        time.sleep(1)  
+
         containers = self.wait_for(
             description="Mencari containers input-style-1",
             condition=EC.presence_of_all_elements_located(
                 (By.CSS_SELECTOR, ".input-style-1.col-xl-4")
             ),
         )
-
         for container in containers:
             try:
                 label = container.find_element(By.TAG_NAME, "label")
@@ -443,11 +448,11 @@ class Gree(SeleniumHelper):
         self._update_status("Membuka form edit", 70)
         self.click_edit_icon()
 
-        self._update_status("Upload serial number (Outdoor)", 85)
+        self._update_status("Upload serial number", 85)
         self.click_serial_number(tipe="Outdoor")
-
+        self.click_serial_number(tipe="Indoor")
         self._update_status("Finalisasi", 95)
 
         self.click_modification_button()
-        # self.display_step_visit()
-        # self.upload_in_step_visit()
+        self.display_step_visit()
+        self.upload_in_step_visit()
