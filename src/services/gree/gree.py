@@ -42,12 +42,7 @@ class Gree(SeleniumHelper):
             options.add_argument("--disable-dev-shm-usage")
             options.add_argument("--window-size=1920,1080")
 
-            options.add_argument("--disable-extensions")
-            options.add_argument("--disable-logging")
-            options.add_argument("--disable-dev-tools")
-            options.add_argument("--disable-blink-features=AutomationControlled")
-            options.add_argument("--disable-web-security")
-            options.add_argument("--disable-features=VizDisplayCompositor")
+            
 
         self.driver = webdriver.Chrome(options=options)
         self.wait = WebDriverWait(self.driver, 20)
