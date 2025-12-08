@@ -3,12 +3,8 @@ from datetime import datetime
 
 class GreeRequestSchema(BaseModel):
     no_ticket: str
-    customer: str
-    model: str
-    keluhan: str
-    tanggal: datetime
-    before: str
-    after: str
-    serial_number: str
+    serial_number_indoor: str
+    serial_number_outdoor: str
     lokasi: str
+    route_navigation: str
     status_gree: int

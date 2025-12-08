@@ -130,7 +130,7 @@
                             <tr>
                                 <td colspan="6" class="text-center text-muted py-4">
                                     <i class="bi bi-search display-4 d-block mb-2"></i>
-                                    <h4>Data Tidak Ditemukan</h4>
+                                    <h4>Data tidak dimasukkan</h4>
                                     <p>Belum ada data tiket dalam sistem</p>
                                 </td>
                             </tr>
@@ -156,19 +156,19 @@
                                 <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                                     <div class="row g-3">
 
-                                        <!-- Before -->
+
                                         <div class="col-md-6">
                                             <div class="card">
                                                 <div class="card-header">
-                                                    <strong><i class="bi bi-image"></i> Before</strong>
+                                                    <strong><i class="bi bi-image"></i> Serial Number Indoor</strong>
                                                 </div>
                                                 <div class="card-body text-center">
-                                                    {% if tiket.before %}
-                                                    <img src="/public/{{ tiket.before }}" class="img-fluid rounded shadow-sm foto-preview"
+                                                    {% if tiket.serial_number_indoor %}
+                                                    <img src="/public/{{ tiket.serial_number_indoor }}" class="img-fluid rounded shadow-sm foto-preview"
                                                         alt="Before" style="max-height: 250px; object-fit: contain; cursor: pointer;"
-                                                        onclick="openImageNewTab('/public/{{ tiket.before }}')">
+                                                        onclick="openImageNewTab('/public/{{ tiket.serial_number_indoor }}')">
                                                     <div class="mt-2">
-                                                        <a href="/public/{{ tiket.before }}" target="_blank"
+                                                        <a href="/public/{{ tiket.serial_number_indoor }}" target="_blank"
                                                             class="btn btn-sm btn-outline-primary">
                                                             <i class="bi bi-box-arrow-up-right"></i> Buka di Tab Baru
                                                         </a>
@@ -183,19 +183,19 @@
                                             </div>
                                         </div>
 
-                                        <!-- After -->
+
                                         <div class="col-md-6">
                                             <div class="card">
                                                 <div class="card-header">
-                                                    <strong><i class="bi bi-image"></i> After</strong>
+                                                    <strong><i class="bi bi-image"></i> Serial Number Outdoor</strong>
                                                 </div>
                                                 <div class="card-body text-center">
-                                                    {% if tiket.after %}
-                                                    <img src="/public/{{ tiket.after }}" class="img-fluid rounded shadow-sm foto-preview"
+                                                    {% if tiket.serial_number_outdoor %}
+                                                    <img src="/public/{{ tiket.serial_number_outdoor }}" class="img-fluid rounded shadow-sm foto-preview"
                                                         alt="After" style="max-height: 250px; object-fit: contain; cursor: pointer;"
-                                                        onclick="openImageNewTab('/public/{{ tiket.after }}')">
+                                                        onclick="openImageNewTab('/public/{{ tiket.serial_number_outdoor }}')">
                                                     <div class="mt-2">
-                                                        <a href="/public/{{ tiket.after }}" target="_blank"
+                                                        <a href="/public/{{ tiket.serial_number_outdoor }}" target="_blank"
                                                             class="btn btn-sm btn-outline-success">
                                                             <i class="bi bi-box-arrow-up-right"></i> Buka di Tab Baru
                                                         </a>
@@ -210,33 +210,7 @@
                                             </div>
                                         </div>
 
-                                        <!-- Serial Number -->
-                                        <div class="col-md-6">
-                                            <div class="card">
-                                                <div class="card-header">
-                                                    <strong><i class="bi bi-upc-scan"></i> Serial Number</strong>
-                                                </div>
-                                                <div class="card-body text-center">
-                                                    {% if tiket.serial_number %}
-                                                    <img src="/public/{{ tiket.serial_number }}"
-                                                        class="img-fluid rounded shadow-sm foto-preview" alt="Serial Number"
-                                                        style="max-height: 250px; object-fit: contain; cursor: pointer;"
-                                                        onclick="openImageNewTab('/public/{{ tiket.serial_number }}')">
-                                                    <div class="mt-2">
-                                                        <a href="/public/{{ tiket.serial_number }}" target="_blank"
-                                                            class="btn btn-sm btn-outline-warning">
-                                                            <i class="bi bi-box-arrow-up-right"></i> Buka di Tab Baru
-                                                        </a>
-                                                    </div>
-                                                    {% else %}
-                                                    <div class="text-muted py-5">
-                                                        <i class="bi bi-image" style="font-size: 3rem;"></i>
-                                                        <p class="mt-2">Tidak ada foto</p>
-                                                    </div>
-                                                    {% endif %}
-                                                </div>
-                                            </div>
-                                        </div>
+
 
                                         <!-- Lokasi -->
                                         <div class="col-md-6">
@@ -251,6 +225,33 @@
                                                         onclick="openImageNewTab('/public/{{ tiket.lokasi }}')">
                                                     <div class="mt-2">
                                                         <a href="/public/{{ tiket.lokasi }}" target="_blank"
+                                                            class="btn btn-sm btn-outline-info">
+                                                            <i class="bi bi-box-arrow-up-right"></i> Buka di Tab Baru
+                                                        </a>
+                                                    </div>
+                                                    {% else %}
+                                                    <div class="text-muted py-5">
+                                                        <i class="bi bi-image" style="font-size: 3rem;"></i>
+                                                        <p class="mt-2">Tidak ada foto</p>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <strong><i class="bi bi-geo-alt"></i>Route Navigation</strong>
+                                                </div>
+                                                <div class="card-body text-center">
+                                                    {% if tiket.route_navigation %}
+                                                    <img src="/public/{{tiket.route_navigation }}" class="img-fluid rounded shadow-sm foto-preview"
+                                                        alt="Lokasi" style="max-height: 250px; object-fit: contain; cursor: pointer;"
+                                                        onclick="openImageNewTab('/public/{{ tiket.route_navigation }}')">
+                                                    <div class="mt-2">
+                                                        <a href="/public/{{ tiket.route_navigation }}" target="_blank"
                                                             class="btn btn-sm btn-outline-info">
                                                             <i class="bi bi-box-arrow-up-right"></i> Buka di Tab Baru
                                                         </a>
@@ -296,42 +297,42 @@
                                             <tr>
                                                 <td width="150"><strong>Tanggal</strong></td>
                                                 <td width="20">:</td>
-                                                <td>{{ tiket.tanggal or "-" }}</td>
+                                                <td>{{ tiket.tanggal or "Data tidak dimasukkan" }}</td>
                                             </tr>
                                             <tr>
                                                 <td><strong>No Tiket</strong></td>
                                                 <td>:</td>
-                                                <td>{{ tiket.no_tiket or "-" }}</td>
+                                                <td>{{ tiket.no_tiket or "Data tidak dimasukkan" }}</td>
                                             </tr>
                                             <tr>
                                                 <td><strong>Customer</strong></td>
                                                 <td>:</td>
-                                                <td>{{ tiket.customer or "-" }}</td>
+                                                <td>{{ tiket.customer or "Data tidak dimasukkan" }}</td>
                                             </tr>
                                             <tr>
                                                 <td><strong>Model</strong></td>
                                                 <td>:</td>
-                                                <td>{{ tiket.model or "-" }}</td>
+                                                <td>{{ tiket.model or "Data tidak dimasukkan" }}</td>
                                             </tr>
                                             <tr>
                                                 <td><strong>Keluhan</strong></td>
                                                 <td>:</td>
-                                                <td style="white-space: pre-wrap;">{{ tiket.keluhan or "-" }}</td>
+                                                <td style="white-space: pre-wrap;">{{ tiket.keluhan or "Data tidak dimasukkan" }}</td>
                                             </tr>
                                             <tr>
                                                 <td><strong>Teknisi</strong></td>
                                                 <td>:</td>
-                                                <td>{{ tiket.teknisi or "-" }}</td>
+                                                <td>{{ tiket.teknisi or "Data tidak dimasukkan" }}</td>
                                             </tr>
                                             <tr>
                                                 <td><strong>Indikasi</strong></td>
                                                 <td>:</td>
-                                                <td style="white-space: pre-wrap;">{{ tiket.indikasi or "-" }}</td>
+                                                <td style="white-space: pre-wrap;">{{ tiket.indikasi or "Data tidak dimasukkan" }}</td>
                                             </tr>
                                             <tr>
                                                 <td><strong>Tindakan</strong></td>
                                                 <td>:</td>
-                                                <td style="white-space: pre-wrap;">{{ tiket.tindakan or "-" }}</td>
+                                                <td style="white-space: pre-wrap;">{{ tiket.tindakan or "Data tidak dimasukkan" }}</td>
                                             </tr>
                                             <tr>
                                                 <td><strong>Lokasi Koordinat</strong></td>
@@ -344,7 +345,7 @@
                                                         <i class="bi bi-map"></i> Buka Maps
                                                     </a>
                                                     {% else %}
-                                                    -
+                                                    Data tidak dimasukkan
                                                     {% endif %}
                                                 </td>
                                             </tr>

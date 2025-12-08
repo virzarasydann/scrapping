@@ -3,8 +3,9 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from typing_extensions import Tuple
 
-from src.schemas.gree.gree_request_schema import GreeRequestSchema as GreeTicket
 from src.repository.ticket_repository import TicketRepository
+from src.schemas.gree.gree_request_schema import GreeRequestSchema as GreeTicket
+
 
 class GreeService:
     def __init__(self):
@@ -22,14 +23,10 @@ class GreeService:
 
         gree_ticket = GreeTicket(
             no_ticket=orm_ticket.no_tiket,
-            customer=orm_ticket.customer,
-            model=orm_ticket.model,
-            keluhan=orm_ticket.keluhan,
-            tanggal=orm_ticket.tanggal,
-            before=orm_ticket.before,
-            after=orm_ticket.after,
-            serial_number=orm_ticket.serial_number,
+            serial_number_indoor=orm_ticket.serial_number_indoor,
+            serial_number_outdoor=orm_ticket.serial_number_outdoor,
             lokasi=orm_ticket.lokasi,
+            route_navigation=orm_ticket.route_navigation,
             status_gree=orm_ticket.status_gree,
         )
 

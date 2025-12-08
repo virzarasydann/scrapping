@@ -146,7 +146,7 @@
                         </div>
 
 
-                        <div class="col-md-6">
+                        <!--<div class="col-md-6">
                             <label for="before" class="form-label">Before</label>
                             <input type="file" class="form-control file-input" id="before" name="before" accept=".jpg,.jpeg">
                             <div class="file-preview" id="before_preview"></div>
@@ -156,34 +156,46 @@
                             <label for="after" class="form-label">After</label>
                             <input type="file" class="form-control file-input" id="after" name="after" accept=".jpg,.jpeg">
                             <div class="file-preview" id="after_preview"></div>
+                        </div>-->
+
+                        <div class="col-md-6">
+                            <label for="serial_number_indoor" class="form-label">Serial Number Indoor</label>
+                            <input type="file" class="form-control file-input" id="serial_number_indoor" name="serial_number_indoor" accept=".jpg,.jpeg">
+                            <div class="file-preview" id="serial_number_indoor_preview"></div>
                         </div>
 
                         <div class="col-md-6">
-                            <label for="serial_number" class="form-label">Serial Number</label>
-                            <input type="file" class="form-control file-input" id="serial_number" name="serial_number" accept=".jpg,.jpeg">
-                            <div class="file-preview" id="serial_number_preview"></div>
+                            <label for="serial_number_outdoor" class="form-label">Serial Number Outdoor</label>
+                            <input type="file" class="form-control file-input" id="serial_number_outdoor" name="serial_number_outdoor" accept=".jpg,.jpeg">
+                            <div class="file-preview" id="serial_number_outdoor_preview"></div>
                         </div>
 
                         <div class="col-md-6">
                             <label for="lokasi_file" class="form-label">Lokasi</label>
-                            <input type="file" class="form-control file-input" id="lokasi_file" name="lokasi" accept=".jpg,.jpeg">
+                            <input type="file" class="form-control file-input" id="lokasi_file" name="lokasi_file" accept=".jpg,.jpeg">
                             <div class="file-preview" id="lokasi_file_preview"></div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="route_navigation" class="form-label">Route Navigation</label>
+                            <input type="file" class="form-control file-input" id="route_navigation" name="route_navigation" accept=".jpg,.jpeg">
+                            <div class="file-preview" id="route_navigation_preview"></div>
                         </div>
 
 
 
 
-                        <div class="col-md-6">
+                        <!--<div class="col-md-6">
                             <label for="lokasi" class="form-label">Lokasi</label>
                             <div class="input-group">
                                 <input type="text" class="form-control" id="lokasi_koordinat" name="lokasi_koordinat" placeholder="Klik tombol untuk ambil lokasi"
-                                    readonly>
+                                    disabled>
                                 <button type="button" class="btn btn-outline-primary" onclick="getLocation()">
                                     Ambil Lokasi
                                 </button>
                             </div>
                             <small class="text-muted">Lokasi diisi otomatis dari browser (minta izin).</small>
-                        </div>
+                        </div>-->
 
 
 
@@ -294,6 +306,7 @@
 
         audio.play()
         toastr.error("Ada inputan yang salah");
+        toastr.error("Pastikan No Ticket tidak kosong DAN semua file telah terupload");
     });
 </script>
 {% endif %}

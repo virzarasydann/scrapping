@@ -1,28 +1,20 @@
-from datetime import datetime
-
-from src.schemas.gree.gree_request_schema import GreeRequestSchema as GreeTicket
+from src.configuration.database import SessionLocal
 from src.services.gree.gree import Gree
-
+from src.services.gree.gree_service import GreeService
 
 
 def main():
     print("=== SCRIPT DIMULAI ===")
+    db = SessionLocal()
+    try:
+        service = GreeService()
+        gree_ticket, orm_ticket = service.get_ticket_by_id(84, db)
 
-    ticket = GreeTicket(
-        no_ticket="JKA-251206-0002-01",
-        customer="John Doe",
-        model="AC Deluxe Model X",
-        keluhan="Tidak dingin",
-        tanggal=datetime.now(),
-        before="",
-        after="",
-        serial_number="btesting.jpg",
-        lokasi="btesting.jpg",
-        status_gree=0
-    )
+        gree = Gree(gree_ticket, headless=False)
+        gree.run()
 
-    gree = Gree(ticket, headless=False)
-    gree.run()
+    finally:
+        db.close()
 
 
 if __name__ == "__main__":

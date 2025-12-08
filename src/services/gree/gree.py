@@ -42,8 +42,6 @@ class Gree(SeleniumHelper):
             options.add_argument("--disable-dev-shm-usage")
             options.add_argument("--window-size=1920,1080")
 
-            
-
         self.driver = webdriver.Chrome(options=options)
         self.wait = WebDriverWait(self.driver, 20)
         self.ticket = ticket
@@ -163,7 +161,56 @@ class Gree(SeleniumHelper):
 
         return {"status": "success"}
 
-    def upload_serial_number_image(self, file_path: GreeTicket, tipe):
+    def _upload_serial_number_image_indoor(self, file_path: GreeTicket):
+        rdelay(2, 2)
+
+        buttons = self.wait_for(
+            description="All footer buttons",
+            condition=EC.presence_of_all_elements_located(
+                (By.CSS_SELECTOR, ".modal-footer button")
+            ),
+        )
+
+        for btn in buttons:
+            classes = btn.get_attribute("class")
+            text = btn.text.strip()
+            if "Button_blue__" in classes and text == "Upload":
+                print("3")
+                file_input = self.wait_for(
+                    description="File input di Indoor",
+                    condition=EC.presence_of_element_located(
+                        (By.CSS_SELECTOR, "input[type='file'][accept='image/*']")
+                    ),
+                )
+
+                rdelay(2, 2)
+
+                self.driver.execute_script(
+                    """
+                   arguments[0].style.display = 'block';
+                   arguments[0].style.visibility = 'visible';
+               """,
+                    file_input,
+                )
+
+                file_input.send_keys(
+                    os.path.abspath(f"{PUBLIC_DIR}/{file_path.serial_number_indoor}")
+                )
+                rdelay(2, 2)
+
+                self.log("Berhasil  Upload")
+
+                # self.wait_for(
+                #     description="Menunggu modal tertutup",
+                #     condition=EC.invisibility_of_element_located(
+                #         (By.CSS_SELECTOR, ".modal-footer")
+                #     ),
+                # )
+                time.sleep(1)
+                return
+
+    def _upload_serial_number_image_outdoor(self, file_path: GreeTicket):
+        rdelay(2, 2)
         buttons = self.wait_for(
             description="All footer buttons",
             condition=EC.presence_of_all_elements_located(
@@ -175,36 +222,39 @@ class Gree(SeleniumHelper):
             text = btn.text.strip()
             if "Button_blue__" in classes and text == "Upload":
                 file_input = self.wait_for(
-                    description=f"File input di {tipe}",
+                    description="File input di Outdoor",
                     condition=EC.presence_of_element_located(
-                        (By.CSS_SELECTOR, "input[type='file'][accept='image/*']")
+                        (
+                            By.CSS_SELECTOR,
+                            "input[type='file'][accept='image/*']",
+                        )
                     ),
                 )
+                rdelay(2, 2)
                 self.driver.execute_script(
                     """
-                   arguments[0].style.display = 'block';
-                   arguments[0].style.visibility = 'visible';
-               """,
+                    arguments[0].style.display = 'block';
+                    arguments[0].style.visibility = 'visible';
+                """,
                     file_input,
                 )
                 file_input.send_keys(
-                    os.path.abspath(f"{PUBLIC_DIR}/{file_path.serial_number}")
+                    os.path.abspath(f"{PUBLIC_DIR}/{file_path.serial_number_outdoor}")
                 )
-                btn.click()
-                self.log("Berhasil klik tombol Upload")
+                rdelay(2, 2)
 
+                self.log("Berhasil  Upload")
 
-                self.wait_for(
-                    description="Menunggu modal tertutup",
-                    condition=EC.invisibility_of_element_located(
-                        (By.CSS_SELECTOR, ".modal-footer")
-                    )
-                )
+                # self.wait_for(
+                #     description="Menunggu modal tertutup",
+                #     condition=EC.invisibility_of_element_located(
+                #         (By.CSS_SELECTOR, ".modal-footer")
+                #     ),
+                # )
                 time.sleep(1)
                 return
 
-    def click_serial_number(self, tipe: str = "Indoor"):
-
+    def click_serial_number_indoor(self):
         time.sleep(1)
 
         containers = self.wait_for(
@@ -216,11 +266,32 @@ class Gree(SeleniumHelper):
         for container in containers:
             try:
                 label = container.find_element(By.TAG_NAME, "label")
-                if f"Nomor Seri ({tipe})" in label.text:
+                if "Nomor Seri (Indoor)" in label.text:
                     svg_button = container.find_element(By.CSS_SELECTOR, ".card-style")
-                    self.log(f"Element dari ({tipe}) ditemukan")
+                    self.log("Element dari (Indoor) ditemukan")
                     svg_button.click()
-                    self.upload_serial_number_image(self.ticket, tipe)
+                    self._upload_serial_number_image_indoor(self.ticket)
+                    break
+            except Exception as e:
+                self.log(f"Element tidak ditemukan: {e}")
+
+    def click_serial_number_outdoor(self):
+        time.sleep(1)
+
+        containers = self.wait_for(
+            description="Mencari containers input-style-1",
+            condition=EC.presence_of_all_elements_located(
+                (By.CSS_SELECTOR, ".input-style-1.col-xl-4")
+            ),
+        )
+        for container in containers:
+            try:
+                label = container.find_element(By.TAG_NAME, "label")
+                if "Nomor Seri (Outdoor)" in label.text:
+                    svg_button = container.find_element(By.CSS_SELECTOR, ".card-style")
+                    self.log("Element dari (Outdoor) ditemukan")
+                    svg_button.click()
+                    self._upload_serial_number_image_outdoor(self.ticket)
                     break
             except Exception as e:
                 self.log(f"Element tidak ditemukan: {e}")
@@ -274,7 +345,6 @@ class Gree(SeleniumHelper):
 
         Digunakan setelah schedule
         """
-
         for attempt in range(1, max_attempts + 1):
             try:
                 modification_button = self.wait_for(
@@ -311,120 +381,212 @@ class Gree(SeleniumHelper):
                 time.sleep(delay)
 
     def upload_in_step_visit(self, max_attempts=5, delay=1):
-        try:
-            uploaded_labels = set()
+        """
+        Main orchestrator untuk upload Lokasi dan Navigation Route
 
-            for attempt in range(1, max_attempts + 1):
-                boxes = self.wait_for(
-                    description=f"Mencoba mendapatkan components_box (percobaan {attempt}/{max_attempts})",
-                    condition=EC.presence_of_all_elements_located(
-                        (By.XPATH, LOCATORS["display_next_step"])
+        Flow:
+        1. Upload Lokasi (index [1])
+        2. Upload Navigation Route (index [2])
+        3. Klik tombol Simpan
+        """
+        try:
+            self.log("Memulai proses upload di Step Visit...")
+
+            # Upload Lokasi
+            self.upload_lokasi(max_attempts, delay)
+
+            # Upload Navigation Route
+            self.upload_navigation_route(max_attempts, delay)
+
+            # Klik tombol Simpan
+            # input("...")
+            self.log("Semua upload selesai, klik tombol Simpan...")
+            button_save = self.wait_for(
+                description="Tombol Simpan di Next Step",
+                condition=EC.element_to_be_clickable(
+                    (By.XPATH, LOCATORS["button_save_in_next_step"])
+                ),
+            )
+            button_save.click()
+            self.log("Tombol Simpan berhasil diklik")
+
+        except Exception as e:
+            self.log(f"ERROR di upload_in_step_visit: {e}")
+            raise
+
+    def upload_lokasi(self, max_attempts=5, delay=1):
+        """
+        Upload file untuk field Lokasi (index [1])
+        """
+        xpath_lokasi = "(//div[@class='col-lg-6 col-md-6 col-sm-4 col-6'])[1]"
+
+        for attempt in range(1, max_attempts + 1):
+            try:
+                self.log(f"[LOKASI] Percobaan {attempt}/{max_attempts}")
+
+                # Tunggu dan dapatkan container Lokasi
+                lokasi_container = self.wait_for(
+                    description="Container Lokasi",
+                    condition=EC.presence_of_element_located((By.XPATH, xpath_lokasi)),
+                )
+
+                # Cek label untuk konfirmasi
+                label_element = lokasi_container.find_element(By.XPATH, ".//span")
+                label_text = label_element.text.strip()
+                self.log(f"[LOKASI] Label ditemukan: {label_text}")
+
+                # Cari tombol Unggah
+                unggah_btn = lokasi_container.find_element(
+                    By.XPATH, ".//button[contains(normalize-space(), 'Unggah')]"
+                )
+
+                # Klik tombol Unggah
+                self.driver.execute_script("arguments[0].click();", unggah_btn)
+                self.log(f"[LOKASI]  Klik tombol Unggah untuk: {label_text}")
+
+                # Upload file melalui modal
+                self._upload_file_with_modal(self.ticket.lokasi)
+                self.log("[LOKASI]  Upload selesai")
+
+                time.sleep(1)
+                return True
+
+            except StaleElementReferenceException:
+                self.log(f"[LOKASI] Stale element, retry {attempt}/{max_attempts}...")
+                time.sleep(delay)
+                if attempt == max_attempts:
+                    raise Exception(
+                        "Gagal upload Lokasi setelah beberapa percobaan (stale element)"
+                    )
+
+            except Exception as e:
+                self.log(f"[LOKASI] ERROR: {e}")
+                if attempt == max_attempts:
+                    raise Exception(f"Gagal upload Lokasi: {e}") from e
+                time.sleep(delay)
+
+    def upload_navigation_route(self, max_attempts=5, delay=1):
+        """
+        Upload file untuk field Navigation Route by Google Map (index [2])
+        """
+        xpath_navigation = "(//div[@class='col-lg-6 col-md-6 col-sm-4 col-6'])[2]"
+
+        for attempt in range(1, max_attempts + 1):
+            try:
+                self.log(f"[NAVIGATION] Percobaan {attempt}/{max_attempts}")
+
+                # Tunggu dan dapatkan container Navigation Route
+                navigation_container = self.wait_for(
+                    description="Container Navigation Route",
+                    condition=EC.presence_of_element_located(
+                        (By.XPATH, xpath_navigation)
                     ),
                 )
 
-                if not boxes:
-                    raise Exception("Tidak ditemukan components_box")
+                # Cek label untuk konfirmasi
+                label_element = navigation_container.find_element(By.XPATH, ".//span")
+                label_text = label_element.text.strip()
+                self.log(f"[NAVIGATION] Label ditemukan: {label_text}")
 
-                upload_found = False
+                # Cari tombol Unggah
+                unggah_btn = navigation_container.find_element(
+                    By.XPATH, ".//button[contains(normalize-space(), 'Unggah')]"
+                )
 
-                for box in boxes:
-                    try:
-                        label_text = box.find_element(By.XPATH, ".//span").text.strip()
+                # Klik tombol Unggah
+                self.driver.execute_script("arguments[0].click();", unggah_btn)
+                self.log(f"[NAVIGATION]  Klik tombol Unggah untuk: {label_text}")
 
-                        if label_text in uploaded_labels:
-                            continue
+                # Upload file melalui modal
+                self._upload_file_with_modal(self.ticket.route_navigation)
+                self.log("[NAVIGATION]  Upload selesai")
 
-                        self.log(f"Label ditemukan: {label_text}")
+                time.sleep(1)
+                return True
 
-                        unggah_btns = box.find_elements(
-                            By.XPATH, ".//button[contains(normalize-space(), 'Unggah')]"
-                        )
+            except StaleElementReferenceException:
+                self.log(
+                    f"[NAVIGATION] Stale element, retry {attempt}/{max_attempts}..."
+                )
+                time.sleep(delay)
+                if attempt == max_attempts:
+                    raise Exception(
+                        "Gagal upload Navigation Route setelah beberapa percobaan (stale element)"
+                    )
 
-                        if not unggah_btns:
-                            self.log(f"Tidak ada tombol Unggah untuk: {label_text}")
-                            uploaded_labels.add(label_text)
-                            continue
+            except Exception as e:
+                self.log(f"[NAVIGATION] ERROR: {e}")
+                if attempt == max_attempts:
+                    raise Exception(f"Gagal upload Navigation Route: {e}") from e
+                time.sleep(delay)
 
-                        unggah_btn = unggah_btns[0]
-                        self.driver.execute_script("arguments[0].click();", unggah_btn)
-                        self.log(f"Klik tombol Unggah untuk: {label_text}")
+    def _upload_file_with_modal(self, file_path: str):
+        """
+        Generic method untuk upload file melalui modal
 
-                        self._upload_lokasi_and_navigation_route_in_next_step(
-                            self.ticket
-                        )
+        Args:
+            file_path: GreeTicket object yang berisi serial_number
 
-                        uploaded_labels.add(label_text)
-                        upload_found = True
+        Raises:
+            Exception: Jika upload gagal
+        """
+        try:
+            # Tunggu semua button di modal footer
+            buttons = self.wait_for(
+                description="Tombol di modal footer",
+                condition=EC.presence_of_all_elements_located(
+                    (By.CSS_SELECTOR, ".modal-footer button")
+                ),
+            )
 
-                        time.sleep(1)
+            # Cari tombol Unggah yang benar
+            unggah_button_found = False
+            for btn in buttons:
+                classes = btn.get_attribute("class")
+                text = btn.text.strip()
 
-                        break
+                if "Button_blue__" in classes and text == "Unggah":
+                    unggah_button_found = True
 
-                    except StaleElementReferenceException:
-                        self.log("Stale element, akan re-fetch boxes...")
-                        break
-                    except Exception as e:
-                        self.log(f"Error processing box: {e}")
-                        continue
-
-                if not upload_found:
-                    button_save = self.wait_for(
-                        description="Mencoba mendapatkan komponen simpan)",
-                        condition=EC.element_to_be_clickable(
+                    # Tunggu file input
+                    file_input = self.wait_for(
+                        description="File input di modal",
+                        condition=EC.presence_of_element_located(
                             (
-                                By.XPATH,
-                                LOCATORS["button_save_in_next_step"],
+                                By.CSS_SELECTOR,
+                                "input[type='file'][accept='image/jpeg,image/png']",
                             )
                         ),
                     )
 
-                    button_save.click()
-                    self.log("Semua upload selesai")
-                    return
+                    # Make file input visible
+                    self.driver.execute_script(
+                        """
+                            arguments[0].style.display = 'block';
+                            arguments[0].style.visibility = 'visible';
+                        """,
+                        file_input,
+                    )
+
+                    # Upload file
+                    file_full_path = os.path.abspath(f"{PUBLIC_DIR}/{file_path}")
+                    file_input.send_keys(file_full_path)
+
+                    self.log(f"File berhasil di-upload: {file_path}")
+                    time.sleep(1)  # Wait untuk processing
+
+                  
+                    self.log("Tombol Unggah di modal berhasil diklik")
+                    time.sleep(1)
+
+                    break
+
+            if not unggah_button_found:
+                raise Exception("Tombol Unggah tidak ditemukan di modal footer")
 
         except Exception as e:
-            print("Error di upload_in_step_visit:", e)
+            self.log(f"ERROR di _upload_file_with_modal: {e}")
             raise
-
-    def _upload_lokasi_and_navigation_route_in_next_step(self, file_path: GreeTicket):
-        buttons = self.wait_for(
-            description="All footer buttons",
-            condition=EC.presence_of_all_elements_located(
-                (By.CSS_SELECTOR, ".modal-footer button")
-            ),
-        )
-
-        for btn in buttons:
-            classes = btn.get_attribute("class")
-            text = btn.text.strip()
-
-            if "Button_blue__" in classes and text == "Unggah":
-                file_input = self.wait_for(
-                    description="File input",
-                    condition=EC.presence_of_element_located(
-                        (
-                            By.CSS_SELECTOR,
-                            "input[type='file'][accept='image/jpeg,image/png']",
-                        )
-                    ),
-                )
-
-                self.driver.execute_script(
-                    """
-                    arguments[0].style.display = 'block';
-                    arguments[0].style.visibility = 'visible';
-                """,
-                    file_input,
-                )
-
-                file_input.send_keys(
-                    os.path.abspath(f"{PUBLIC_DIR}/{file_path.serial_number}")
-                )
-
-                btn.click()
-                self.log("Berhasil klik tombol Upload")
-
-                return
 
     # def run(self):
     #     self.get_login_url()
@@ -451,8 +613,8 @@ class Gree(SeleniumHelper):
         self.click_edit_icon()
 
         self._update_status("Upload serial number", 85)
-        self.click_serial_number(tipe="Outdoor")
-        self.click_serial_number(tipe="Indoor")
+        self.click_serial_number_indoor()
+        self.click_serial_number_outdoor()
         self._update_status("Finalisasi", 95)
 
         self.click_modification_button()

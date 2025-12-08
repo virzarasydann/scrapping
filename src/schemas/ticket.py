@@ -5,7 +5,7 @@ from typing import Optional
 class TicketCreate(BaseModel):
     tanggal: str
     no_tiket: str
-    customer: str
+    customer: Optional[str] = None
     model: Optional[str] = None
     keluhan: Optional[str] = None
     teknisi: Optional[str] = None
@@ -15,7 +15,7 @@ class TicketCreate(BaseModel):
     status_fs: bool = False
     status_gree: bool = False
 
-    @field_validator("tanggal", "no_tiket", "customer")
+    @field_validator("tanggal", "no_tiket")
     def required_not_empty(cls, v, field):
         if v is None or str(v).strip() == "":
             raise ValueError(f"{field.field_name} tidak boleh kosong")
