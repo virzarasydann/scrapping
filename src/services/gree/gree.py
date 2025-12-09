@@ -269,7 +269,20 @@ class Gree(SeleniumHelper):
                 if "Nomor Seri (Indoor)" in label.text:
                     svg_button = container.find_element(By.CSS_SELECTOR, ".card-style")
                     self.log("Element dari (Indoor) ditemukan")
-                    svg_button.click()
+                    self.driver.execute_script(
+                        "arguments[0].scrollIntoView({block: 'center', behavior: 'smooth'});",
+                        svg_button,
+                    )
+                    time.sleep(2)
+
+                    try:
+                        svg_button.click()
+                        self.log(" Berhasil klik (Indoor) dengan .click()")
+                    except ElementClickInterceptedException:
+                        self.log("Normal click gagal, menggunakan JavaScript click...")
+                        self.driver.execute_script("arguments[0].click();", svg_button)
+                        self.log(" Berhasil klik (Indoor) dengan JavaScript")
+
                     self._upload_serial_number_image_indoor(self.ticket)
                     break
             except Exception as e:
@@ -290,7 +303,20 @@ class Gree(SeleniumHelper):
                 if "Nomor Seri (Outdoor)" in label.text:
                     svg_button = container.find_element(By.CSS_SELECTOR, ".card-style")
                     self.log("Element dari (Outdoor) ditemukan")
-                    svg_button.click()
+                    self.driver.execute_script(
+                        "arguments[0].scrollIntoView({block: 'center', behavior: 'smooth'});",
+                        svg_button,
+                    )
+                    time.sleep(2)
+
+                    try:
+                        svg_button.click()
+                        self.log(" Berhasil klik (Outdoor) dengan .click()")
+                    except ElementClickInterceptedException:
+                        self.log("Normal click gagal, menggunakan JavaScript click...")
+                        self.driver.execute_script("arguments[0].click();", svg_button)
+                        self.log(" Berhasil klik (Indoor) dengan JavaScript")
+
                     self._upload_serial_number_image_outdoor(self.ticket)
                     break
             except Exception as e:
@@ -575,7 +601,6 @@ class Gree(SeleniumHelper):
                     self.log(f"File berhasil di-upload: {file_path}")
                     time.sleep(1)  # Wait untuk processing
 
-                  
                     self.log("Tombol Unggah di modal berhasil diklik")
                     time.sleep(1)
 
@@ -618,5 +643,5 @@ class Gree(SeleniumHelper):
         self._update_status("Finalisasi", 95)
 
         self.click_modification_button()
-        self.display_step_visit()
-        self.upload_in_step_visit()
+        # self.display_step_visit()
+        # self.upload_in_step_visit()
