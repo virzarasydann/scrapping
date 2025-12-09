@@ -643,5 +643,5 @@ class Gree(SeleniumHelper):
         self._update_status("Finalisasi", 95)
 
         self.click_modification_button()
-        # self.display_step_visit()
-        # self.upload_in_step_visit()
+        self.display_step_visit()
+        self.upload_in_step_visit()
