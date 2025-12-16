@@ -481,7 +481,9 @@
         </section>
     </div>
 </div>
+
 <script>
+
     function openImageNewTab(url) {
         window.open(url, '_blank');
     }
@@ -855,5 +857,22 @@
 
         document.getElementById('greeCloseBtn').disabled = false;
     }
+</script>
+{% endblock %}
+{% block scripts %}
+<script>
+$(document).ready(function () {
+    $('#example').DataTable({
+       
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json"
+        },
+        "pageLength": 5,
+        "lengthMenu": [ [5, 10, 25, -1], [5, 10, 25, "Semua"] ],
+        "searching": true, 
+        "ordering": false,
+    });
+});
+
 </script>
 {% endblock %}

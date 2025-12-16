@@ -336,6 +336,7 @@
 
         </div>
     </div>
+
     <script src="/static/template/assets/static/js/components/dark.js"></script>
     <script src="/static/template/assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js"></script>
 
@@ -373,7 +374,7 @@
     <script src="/static/template/plugins/sweetalert2/sweetalert2.min.js"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
-
+    {% block scripts %}{% endblock %}
   </body>
   <script>
     function toggleTheme(isDark) {
