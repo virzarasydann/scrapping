@@ -64,7 +64,7 @@ class DevelopmentConfig(BaseConfig):
 
 
 class ProductionConfig(BaseConfig):
-    DB_HOST = os.environ["DB_HOST"]
+    DB_HOST = os.environ["DB_HOST_PRODUCTION"]
 
 
 def get_config():
