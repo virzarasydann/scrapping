@@ -22,7 +22,7 @@ from src.configuration.config import (
     LOCATORS,
     PUBLIC_DIR,
 )
-from src.schemas.gree.gree_request_schema import GreeRequestSchema as GreeTicket
+from src.schemas.gree.technician_work_orders_schema import MessageResponse as GreeTicket
 from src.services.gree.helper_log import SeleniumHelper
 
 
@@ -86,7 +86,7 @@ class Gree(SeleniumHelper):
         """
         Bagian ini akan mengetik huruf satu persatu dari no_ticket
         """
-        for char in workorder_code.no_ticket:
+        for char in workorder_code.work_orders_number:
             no_wo_input.send_keys(char)
             rdelay(0.05, 0.15)
 
@@ -194,7 +194,7 @@ class Gree(SeleniumHelper):
                 )
 
                 file_input.send_keys(
-                    os.path.abspath(f"{PUBLIC_DIR}/{file_path.serial_number_indoor}")
+                    os.path.abspath(f"{PUBLIC_DIR}/{file_path.barcode_indoor}")
                 )
                 rdelay(2, 2)
 
@@ -239,7 +239,7 @@ class Gree(SeleniumHelper):
                     file_input,
                 )
                 file_input.send_keys(
-                    os.path.abspath(f"{PUBLIC_DIR}/{file_path.serial_number_outdoor}")
+                    os.path.abspath(f"{PUBLIC_DIR}/{file_path.barcode_outdoor}")
                 )
                 rdelay(2, 2)
 
@@ -471,7 +471,7 @@ class Gree(SeleniumHelper):
                 self.log(f"[LOKASI]  Klik tombol Unggah untuk: {label_text}")
 
                 # Upload file melalui modal
-                self._upload_file_with_modal(self.ticket.lokasi)
+                self._upload_file_with_modal(self.ticket.foto_rumah_customer)
                 self.log("[LOKASI]  Upload selesai")
 
                 time.sleep(1)
@@ -524,7 +524,7 @@ class Gree(SeleniumHelper):
                 self.log(f"[NAVIGATION]  Klik tombol Unggah untuk: {label_text}")
 
                 # Upload file melalui modal
-                self._upload_file_with_modal(self.ticket.route_navigation)
+                self._upload_file_with_modal(self.ticket.share_lokasi)
                 self.log("[NAVIGATION]  Upload selesai")
 
                 time.sleep(1)

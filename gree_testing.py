@@ -8,7 +8,7 @@ def main():
     db = SessionLocal()
     try:
         service = GreeService()
-        gree_ticket, orm_ticket = service.get_ticket_by_id(84, db)
+        gree_ticket = service.get_work_orders_by_id(93, db)
 
         gree = Gree(gree_ticket, headless=False)
         gree.run()

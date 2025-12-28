@@ -9,7 +9,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 SRC_DIR = Path(__file__).resolve().parent.parent
-
+LOCAL_TEMP_DIR = SRC_DIR / "public" / "temp"
 
 CONFIGURATION_DIR = Path(__file__).resolve().parent
 
@@ -36,7 +36,7 @@ else:
 
 
 TOKEN = os.getenv("TOKEN")
-
+REMOTE_BASE_URL = os.environ["REMOTE_BASE_URL"]
 
 GROUP_ID = os.getenv("GROUP_ID")
 
@@ -60,11 +60,11 @@ class BaseConfig:
 
 
 class DevelopmentConfig(BaseConfig):
-    DB_HOST = "localhost"  # biasanya 127.0.0.1 juga bisa
+    DB_HOST = "localhost"  
 
 
 class ProductionConfig(BaseConfig):
-    DB_HOST = "localhost"
+    DB_HOST = os.environ["DB_HOST"]
 
 
 def get_config():
