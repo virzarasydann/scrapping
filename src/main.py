@@ -61,6 +61,10 @@ async def root():
 async def health_check():
     return {"status": "healthy"}
 
+@app.get("/health2")
+async def health_check2():
+    return {"status": "healthy2"}
+
 
 @app.get("/logout")
 async def logout(request: Request):
