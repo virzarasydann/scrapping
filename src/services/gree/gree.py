@@ -384,11 +384,11 @@ class Gree(SeleniumHelper):
                     "arguments[0].scrollIntoView({block: 'center'});",
                     modification_button,
                 )
-                time.sleep(0.5)
+                time.sleep(2)
 
                 try:
                     modification_button.click()
-                    time.sleep(1.5)
+                    time.sleep(2)
                 except (
                     StaleElementReferenceException,
                     ElementClickInterceptedException,

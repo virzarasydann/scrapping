@@ -19,7 +19,7 @@ class WorkOrder(Base):
     id = Column(BIGINT(unsigned=True), primary_key=True, autoincrement=True)
 
     
-    work_order_number = Column(String(50), unique=True, nullable=True)
+    work_order_number = Column(String(50), nullable=True)
 
     
     spk_date = Column(Date, nullable=True)
