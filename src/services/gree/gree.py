@@ -596,6 +596,7 @@ class Gree(SeleniumHelper):
 
                     # Upload file
                     file_full_path = os.path.abspath(f"{PUBLIC_DIR}/{file_path}")
+                    print(f"Ini File Full Path {PUBLIC_DIR}/{file_path}")
                     file_input.send_keys(file_full_path)
 
                     self.log(f"File berhasil di-upload: {file_path}")
