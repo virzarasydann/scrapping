@@ -25,11 +25,11 @@ class WorkOrderRepository:
         
         return db.query(WorkOrder).filter(WorkOrder.work_order_number == wo_number).first()
 
-    def update_status(self, db: Session, wo_id: int, new_status: WorkOrderStatus):
+    def update_status_gree(self, db: Session, wo_id: int):
         
         work_order = self.get_work_order_by_id(db, wo_id)
         if work_order:
-            work_order.status = new_status
+            work_order.status_gree = 1
             db.commit()
             db.refresh(work_order)
             return work_order

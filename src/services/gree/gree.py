@@ -14,7 +14,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-
+from dotenv import load_dotenv
 from src.configuration.config import (
     GREE_COOKIE_TEMP,
     GREE_HOME_URL,
@@ -34,6 +34,10 @@ def rdelay(a=0.5, b=1.5):
 class Gree(SeleniumHelper):
     def __init__(self, ticket: GreeTicket, headless: bool = True):
         options = Options()
+        app_env = os.getenv("APP_ENV")
+
+        if app_env == "production":
+            options.binary_location = "/usr/bin/google-chrome"
 
         if headless:
             options.add_argument("--headless=new")

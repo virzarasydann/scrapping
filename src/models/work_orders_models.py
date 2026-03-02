@@ -56,7 +56,9 @@ class WorkOrder(Base):
         nullable=True
     )
 
-  
+    status_gree = Column(Integer, nullable=True)
+    status_fs = Column(Integer, nullable=True)
+    
     created_at = Column(TIMESTAMP, nullable=True, default=func.now())
     updated_at = Column(TIMESTAMP, nullable=True, onupdate=func.now())
 

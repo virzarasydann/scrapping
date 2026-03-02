@@ -138,3 +138,8 @@ class GreeService:
         )
 
         return gree_ticket
+    
+    def set_status_gree(self, id_work_orders: int, db: Session):
+        self.wo_repo.update_status_gree(db, id_work_orders)
+
+        return "success"
