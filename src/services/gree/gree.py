@@ -259,6 +259,9 @@ class Gree(SeleniumHelper):
                 return
 
     def click_serial_number_indoor(self):
+        if not self.ticket.barcode_indoor:
+            self.log("Data Barcode Outdoor null. Melewati proses upload Outdoor.")
+            return
         time.sleep(1)
 
         containers = self.wait_for(
@@ -293,6 +296,9 @@ class Gree(SeleniumHelper):
                 self.log(f"Element tidak ditemukan: {e}")
 
     def click_serial_number_outdoor(self):
+        if not self.ticket.barcode_outdoor:
+            self.log("Data Barcode Outdoor null. Melewati proses upload Outdoor.")
+            return
         time.sleep(1)
 
         containers = self.wait_for(
@@ -448,6 +454,10 @@ class Gree(SeleniumHelper):
         """
         Upload file untuk field Lokasi (index [1])
         """
+
+        if not self.ticket.foto_rumah_customer:
+            self.log("Data Foto Rumah Customer null. Melewati proses upload Lokasi.")
+            return True
         xpath_lokasi = "(//div[@class='col-lg-6 col-md-6 col-sm-4 col-6'])[1]"
 
         for attempt in range(1, max_attempts + 1):
@@ -499,6 +509,9 @@ class Gree(SeleniumHelper):
         """
         Upload file untuk field Navigation Route by Google Map (index [2])
         """
+        if not self.ticket.share_lokasi:
+            self.log("Data Share Lokasi null. Melewati proses upload Navigation Route.")
+            return True
         xpath_navigation = "(//div[@class='col-lg-6 col-md-6 col-sm-4 col-6'])[2]"
 
         for attempt in range(1, max_attempts + 1):
