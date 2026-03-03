@@ -13,7 +13,7 @@ from src.repository.technician_work_orders_repository import TechnicianWorkOrder
 from src.models.message_models import MessageType
 from src.schemas.gree.technician_work_orders_schema import MessageResponse as GreeTicket
 from src.configuration.config import REMOTE_BASE_URL, LOCAL_TEMP_DIR
-
+from src.models.gree_upload_tracking_models import GreeUploadTracking
 
 
 class GreeService:
@@ -77,6 +77,25 @@ class GreeService:
             print(f"Gagal download file {filename}: {str(e)}")
             return None
 
+
+    def get_or_create_tracking(self, db: Session, wo_id: int):
+        tracking = db.query(GreeUploadTracking).filter(GreeUploadTracking.work_order_id == wo_id).first()
+        if not tracking:
+            tracking = GreeUploadTracking(work_order_id=wo_id)
+            db.add(tracking)
+            db.commit()
+            db.refresh(tracking)
+        return tracking
+
+   
+    def update_tracking_status(self, db: Session, wo_id: int, field_name: str):
+        tracking = self.get_or_create_tracking(db, wo_id)
+        setattr(tracking, field_name, True)
+        db.commit()
+
+
+
+
     def get_work_orders_by_id(
         self, id_work_orders: int, db: Session
     ) -> GreeTicket: 
@@ -128,13 +147,19 @@ class GreeService:
         path_lokasi = self._download_file(raw_lokasi) if raw_lokasi else None
        
             
+        tracking = self.get_or_create_tracking(db, id_work_orders)
+
         gree_ticket = GreeTicket(
             work_orders_number=work_order.work_order_number,
             barcode_indoor=path_indoor,      
             barcode_outdoor=path_outdoor,     
             share_lokasi=path_lokasi,
-            foto_rumah_customer=path_rumah
-            
+            foto_rumah_customer=path_rumah,
+           
+            is_barcode_indoor_uploaded=tracking.is_barcode_indoor_uploaded,
+            is_barcode_outdoor_uploaded=tracking.is_barcode_outdoor_uploaded,
+            is_foto_rumah_uploaded=tracking.is_foto_rumah_uploaded,
+            is_share_lokasi_uploaded=tracking.is_share_lokasi_uploaded
         )
 
         return gree_ticket

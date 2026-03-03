@@ -50,6 +50,11 @@ class Gree(SeleniumHelper):
         self.wait = WebDriverWait(self.driver, 20)
         self.ticket = ticket
         self.status_callback = None
+        self.upload_success_callback = None
+
+    def mark_success(self, field_name: str):
+        if self.upload_success_callback:
+            self.upload_success_callback(field_name)
 
     def _update_status(self, step: str, progress: int):
         """Internal method untuk update status via callback"""
@@ -259,8 +264,8 @@ class Gree(SeleniumHelper):
                 return
 
     def click_serial_number_indoor(self):
-        if not self.ticket.barcode_indoor:
-            self.log("Data Barcode Outdoor null. Melewati proses upload Outdoor.")
+        if not self.ticket.barcode_indoor or self.ticket.is_barcode_indoor_uploaded:
+            self.log("Barcode Indoor null/sudah pernah diupload. Melewati (Pass).")
             return
         time.sleep(1)
 
@@ -291,13 +296,14 @@ class Gree(SeleniumHelper):
                         self.log(" Berhasil klik (Indoor) dengan JavaScript")
 
                     self._upload_serial_number_image_indoor(self.ticket)
+                    self.mark_success("is_barcode_indoor_uploaded")
                     break
             except Exception as e:
                 self.log(f"Element tidak ditemukan: {e}")
 
     def click_serial_number_outdoor(self):
-        if not self.ticket.barcode_outdoor:
-            self.log("Data Barcode Outdoor null. Melewati proses upload Outdoor.")
+       if not self.ticket.barcode_outdoor or self.ticket.is_barcode_outdoor_uploaded:
+            self.log("Barcode Outdoor null/sudah pernah diupload. Melewati (Pass).")
             return
         time.sleep(1)
 
@@ -328,6 +334,7 @@ class Gree(SeleniumHelper):
                         self.log(" Berhasil klik (Indoor) dengan JavaScript")
 
                     self._upload_serial_number_image_outdoor(self.ticket)
+                    self.mark_success("is_barcode_outdoor_uploaded")
                     break
             except Exception as e:
                 self.log(f"Element tidak ditemukan: {e}")
@@ -486,6 +493,7 @@ class Gree(SeleniumHelper):
 
                 # Upload file melalui modal
                 self._upload_file_with_modal(self.ticket.foto_rumah_customer)
+                self.mark_success("is_foto_rumah_uploaded")
                 self.log("[LOKASI]  Upload selesai")
 
                 time.sleep(1)
@@ -509,8 +517,8 @@ class Gree(SeleniumHelper):
         """
         Upload file untuk field Navigation Route by Google Map (index [2])
         """
-        if not self.ticket.share_lokasi:
-            self.log("Data Share Lokasi null. Melewati proses upload Navigation Route.")
+        if not self.ticket.share_lokasi or self.ticket.is_share_lokasi_uploaded:
+            self.log("Share Lokasi null/sudah pernah diupload. Melewati (Pass).")
             return True
         xpath_navigation = "(//div[@class='col-lg-6 col-md-6 col-sm-4 col-6'])[2]"
 
@@ -542,6 +550,7 @@ class Gree(SeleniumHelper):
 
                 # Upload file melalui modal
                 self._upload_file_with_modal(self.ticket.share_lokasi)
+                self.mark_success("is_share_lokasi_uploaded")
                 self.log("[NAVIGATION]  Upload selesai")
 
                 time.sleep(1)

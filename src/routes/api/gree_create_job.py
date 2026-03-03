@@ -45,6 +45,12 @@ def process_gree_job(id_work_orders: int, db: Session):
 
         gree = Gree(gree_ticket, headless=True)
 
+        def on_upload_success(field_name: str):
+            gree_service.update_tracking_status(db, id_work_orders, field_name)
+            logger.info(f"Berhasil mengupdate status {field_name} menjadi True di DB")
+
+        
+        gree.upload_success_callback = on_upload_success
         def status_callback(step: str, progress: int):
             update_job_status(
                 id_work_orders, "processing", f"Menjalankan: {step}", progress, step

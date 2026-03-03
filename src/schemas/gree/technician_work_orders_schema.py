@@ -23,6 +23,11 @@ class MessageResponse(BaseModel):
     foto_rumah_customer: Optional[str] = None
     created_at: Optional[str] = None
 
+    is_barcode_indoor_uploaded: bool = False
+    is_barcode_outdoor_uploaded: bool = False
+    is_foto_rumah_uploaded: bool = False
+    is_share_lokasi_uploaded: bool = False
+
     class Config:
         from_attributes = True
 
