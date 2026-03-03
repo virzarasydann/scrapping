@@ -1,5 +1,5 @@
 import enum
-from sqlalchemy import Column, String, Date, Text, Enum, TIMESTAMP
+from sqlalchemy import Column, String, Date, Text, Enum, TIMESTAMP, Integer
 from sqlalchemy.dialects.mysql import BIGINT 
 from sqlalchemy.sql import func
 from src.configuration.database import Base 
