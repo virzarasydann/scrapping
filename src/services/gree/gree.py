@@ -205,6 +205,8 @@ class Gree(SeleniumHelper):
                 file_input.send_keys(
                     os.path.abspath(f"{PUBLIC_DIR}/{file_path.barcode_indoor}")
                 )
+                self.log("Proses Upload Indoor berjalan...")
+                time.sleep(8)
                 rdelay(2, 2)
 
                 self.log("Berhasil  Upload")
@@ -250,6 +252,8 @@ class Gree(SeleniumHelper):
                 file_input.send_keys(
                     os.path.abspath(f"{PUBLIC_DIR}/{file_path.barcode_outdoor}")
                 )
+                self.log("Proses Upload Indoor berjalan...")
+                time.sleep(8)
                 rdelay(2, 2)
 
                 self.log("Berhasil  Upload")
@@ -627,7 +631,7 @@ class Gree(SeleniumHelper):
                     file_input.send_keys(file_full_path)
 
                     self.log(f"File berhasil di-upload: {file_path}")
-                    time.sleep(1)  # Wait untuk processing
+                    time.sleep(10)  # Wait untuk processing
 
                     self.log("Tombol Unggah di modal berhasil diklik")
                     time.sleep(1)
