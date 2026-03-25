@@ -306,7 +306,8 @@ class Gree(SeleniumHelper):
                 self.log(f"Element tidak ditemukan: {e}")
 
     def click_serial_number_outdoor(self):
-       if not self.ticket.barcode_outdoor or self.ticket.is_barcode_outdoor_uploaded:
+        if not self.ticket.barcode_outdoor or self.ticket.is_barcode_outdoor_uploaded:
+
             self.log("Barcode Outdoor null/sudah pernah diupload. Melewati (Pass).")
             return
         time.sleep(1)
