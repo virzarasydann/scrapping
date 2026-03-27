@@ -387,79 +387,56 @@ class Gree(SeleniumHelper):
 
         return False
 
-    def display_step_visit(self, max_attempts=5, delay=1):
+    def _upload_file_with_modal(self, file_path: str):
         """
-        Klik tombol Step Visit
-
-        Digunakan setelah schedule
-        """
-        for attempt in range(1, max_attempts + 1):
-            try:
-                modification_button = self.wait_for(
-                    description=f"Mencoba klik button visit (percobaan {attempt}/{max_attempts})",
-                    condition=EC.element_to_be_clickable(
-                        (By.XPATH, LOCATORS["button_visit"])
-                    ),
-                )
-
-                self.driver.execute_script(
-                    "arguments[0].scrollIntoView({block: 'center'});",
-                    modification_button,
-                )
-                time.sleep(2)
-
-                try:
-                    modification_button.click()
-                    time.sleep(2)
-                except (
-                    StaleElementReferenceException,
-                    ElementClickInterceptedException,
-                ):
-                    self.driver.execute_script(
-                        "arguments[0].click();", modification_button
-                    )
-
-                return True
-
-            except (TimeoutException, StaleElementReferenceException) as e:
-                if attempt == max_attempts:
-                    raise Exception(
-                        f"Gagal klik tombol setelah {max_attempts} percobaan"
-                    ) from e
-                time.sleep(delay)
-
-    def upload_in_step_visit(self, max_attempts=5, delay=1):
-        """
-        Main orchestrator untuk upload Lokasi dan Navigation Route
-
-        Flow:
-        1. Upload Lokasi (index [1])
-        2. Upload Navigation Route (index [2])
-        3. Klik tombol Simpan
+        Generic method untuk upload file melalui modal (Mendukung Auto-Upload & Auto-Close)
         """
         try:
-            self.log("Memulai proses upload di Step Visit...")
+            # 1. Jeda sebentar untuk menunggu animasi pop-up modal terbuka
+            time.sleep(1)
 
-            # Upload Lokasi
-            self.upload_lokasi(max_attempts, delay)
-
-            # Upload Navigation Route
-            self.upload_navigation_route(max_attempts, delay)
-
-            # Klik tombol Simpan
-            # input("...")
-            self.log("Semua upload selesai, klik tombol Simpan...")
-            button_save = self.wait_for(
-                description="Tombol Simpan di Next Step",
-                condition=EC.element_to_be_clickable(
-                    (By.XPATH, LOCATORS["button_save_in_next_step"])
+            # 2. Langsung cari input file yang tersembunyi (abaikan tombol Unggah di modal)
+            file_input = self.wait_for(
+                description="File input di modal",
+                condition=EC.presence_of_element_located(
+                    (
+                        By.CSS_SELECTOR,
+                        "input[type='file'][accept='image/jpeg,image/png']", # Gunakan selector asli Anda
+                    )
                 ),
             )
-            button_save.click()
-            self.log("Tombol Simpan berhasil diklik")
+
+            # 3. Tampilkan elemen input agar bisa menerima file dari Selenium
+            self.driver.execute_script(
+                """
+                    arguments[0].style.display = 'block';
+                    arguments[0].style.visibility = 'visible';
+                """,
+                file_input,
+            )
+
+            # 4. Masukkan file gambar
+            file_full_path = os.path.abspath(f"{PUBLIC_DIR}/{file_path}")
+            self.log(f"Memasukkan file: {file_full_path}")
+            file_input.send_keys(file_full_path)
+
+            # 5. TUNGGU PROSES AUTO-UPLOAD SELESAI (KUNCI UTAMA)
+            self.log("Menunggu proses Auto-Upload (loading bar berjalan hingga modal hilang)...")
+            
+            # Kita menggunakan .modal-footer (elemen asli dari script Anda) sebagai patokan.
+            # Jika modal-footer menghilang, berarti modal sudah tertutup dan upload sukses.
+            self.wait_for(
+                description="Menunggu modal tertutup otomatis",
+                condition=EC.invisibility_of_element_located(
+                    (By.CSS_SELECTOR, ".modal-footer") 
+                )
+            )
+
+            self.log("Modal berhasil tertutup otomatis, file dipastikan terkirim ke server Gree!")
+            time.sleep(1) # Jeda aman sebelum lanjut memproses foto berikutnya
 
         except Exception as e:
-            self.log(f"ERROR di upload_in_step_visit: {e}")
+            self.log(f"ERROR di _upload_file_with_modal: {e}")
             raise
 
     def upload_lokasi(self, max_attempts=5, delay=1):
@@ -467,8 +444,8 @@ class Gree(SeleniumHelper):
         Upload file untuk field Lokasi (index [1])
         """
 
-        if not self.ticket.foto_rumah_customer:
-            self.log("Data Foto Rumah Customer null. Melewati proses upload Lokasi.")
+        if not self.ticket.foto_rumah_customer or self.ticket.is_foto_rumah_uploaded::
+            self.log("Data Foto Rumah Customer null atau foto telah di upload. Melewati proses upload Lokasi.")
             return True
         xpath_lokasi = "(//div[@class='col-lg-6 col-md-6 col-sm-4 col-6'])[1]"
 
@@ -676,5 +653,18 @@ class Gree(SeleniumHelper):
         self._update_status("Finalisasi", 95)
 
         self.click_modification_button()
-        self.display_step_visit()
-        self.upload_in_step_visit()
+
+        butuh_upload_foto = self.ticket.foto_rumah_customer and not self.ticket.is_foto_rumah_uploaded
+        
+        
+        butuh_upload_lokasi = self.ticket.share_lokasi and not self.ticket.is_share_lokasi_uploaded
+
+        
+        if butuh_upload_foto or butuh_upload_lokasi:
+            self.log("Membutuhkan upload di Step Visit...")
+            self.display_step_visit()
+            self.upload_in_step_visit()
+        else:
+            self.log("Foto Rumah dan Share Lokasi sudah terupload atau data kosong. Melewati (Pass) Step Visit.")
+
+        
