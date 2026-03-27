@@ -444,7 +444,7 @@ class Gree(SeleniumHelper):
         Upload file untuk field Lokasi (index [1])
         """
 
-        if not self.ticket.foto_rumah_customer or self.ticket.is_foto_rumah_uploaded::
+        if not self.ticket.foto_rumah_customer or self.ticket.is_foto_rumah_uploaded:
             self.log("Data Foto Rumah Customer null atau foto telah di upload. Melewati proses upload Lokasi.")
             return True
         xpath_lokasi = "(//div[@class='col-lg-6 col-md-6 col-sm-4 col-6'])[1]"
