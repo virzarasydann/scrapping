@@ -387,56 +387,79 @@ class Gree(SeleniumHelper):
 
         return False
 
-    def _upload_file_with_modal(self, file_path: str):
+    def display_step_visit(self, max_attempts=5, delay=1):
         """
-        Generic method untuk upload file melalui modal (Mendukung Auto-Upload & Auto-Close)
+        Klik tombol Step Visit
+
+        Digunakan setelah schedule
+        """
+        for attempt in range(1, max_attempts + 1):
+            try:
+                modification_button = self.wait_for(
+                    description=f"Mencoba klik button visit (percobaan {attempt}/{max_attempts})",
+                    condition=EC.element_to_be_clickable(
+                        (By.XPATH, LOCATORS["button_visit"])
+                    ),
+                )
+
+                self.driver.execute_script(
+                    "arguments[0].scrollIntoView({block: 'center'});",
+                    modification_button,
+                )
+                time.sleep(2)
+
+                try:
+                    modification_button.click()
+                    time.sleep(2)
+                except (
+                    StaleElementReferenceException,
+                    ElementClickInterceptedException,
+                ):
+                    self.driver.execute_script(
+                        "arguments[0].click();", modification_button
+                    )
+
+                return True
+
+            except (TimeoutException, StaleElementReferenceException) as e:
+                if attempt == max_attempts:
+                    raise Exception(
+                        f"Gagal klik tombol setelah {max_attempts} percobaan"
+                    ) from e
+                time.sleep(delay)
+
+    def upload_in_step_visit(self, max_attempts=5, delay=1):
+        """
+        Main orchestrator untuk upload Lokasi dan Navigation Route
+
+        Flow:
+        1. Upload Lokasi (index [1])
+        2. Upload Navigation Route (index [2])
+        3. Klik tombol Simpan
         """
         try:
-            # 1. Jeda sebentar untuk menunggu animasi pop-up modal terbuka
-            time.sleep(1)
+            self.log("Memulai proses upload di Step Visit...")
 
-            # 2. Langsung cari input file yang tersembunyi (abaikan tombol Unggah di modal)
-            file_input = self.wait_for(
-                description="File input di modal",
-                condition=EC.presence_of_element_located(
-                    (
-                        By.CSS_SELECTOR,
-                        "input[type='file'][accept='image/jpeg,image/png']", # Gunakan selector asli Anda
-                    )
+            # Upload Lokasi
+            self.upload_lokasi(max_attempts, delay)
+
+            # Upload Navigation Route
+            self.upload_navigation_route(max_attempts, delay)
+
+            # Klik tombol Simpan
+            # input("...")
+            self.log("Semua upload selesai, klik tombol Simpan...")
+            button_save = self.wait_for(
+                description="Tombol Simpan di Next Step",
+                condition=EC.element_to_be_clickable(
+                    (By.XPATH, LOCATORS["button_save_in_next_step"])
                 ),
             )
-
-            # 3. Tampilkan elemen input agar bisa menerima file dari Selenium
-            self.driver.execute_script(
-                """
-                    arguments[0].style.display = 'block';
-                    arguments[0].style.visibility = 'visible';
-                """,
-                file_input,
-            )
-
-            # 4. Masukkan file gambar
-            file_full_path = os.path.abspath(f"{PUBLIC_DIR}/{file_path}")
-            self.log(f"Memasukkan file: {file_full_path}")
-            file_input.send_keys(file_full_path)
-
-            # 5. TUNGGU PROSES AUTO-UPLOAD SELESAI (KUNCI UTAMA)
-            self.log("Menunggu proses Auto-Upload (loading bar berjalan hingga modal hilang)...")
-            
-            # Kita menggunakan .modal-footer (elemen asli dari script Anda) sebagai patokan.
-            # Jika modal-footer menghilang, berarti modal sudah tertutup dan upload sukses.
-            self.wait_for(
-                description="Menunggu modal tertutup otomatis",
-                condition=EC.invisibility_of_element_located(
-                    (By.CSS_SELECTOR, ".modal-footer") 
-                )
-            )
-
-            self.log("Modal berhasil tertutup otomatis, file dipastikan terkirim ke server Gree!")
-            time.sleep(1) # Jeda aman sebelum lanjut memproses foto berikutnya
+            button_save.click()
+            self.log("Tombol Simpan berhasil diklik")
 
         except Exception as e:
-            self.log(f"ERROR di _upload_file_with_modal: {e}")
+            self.log(f"ERROR di upload_in_step_visit: {e}")
             raise
 
     def upload_lokasi(self, max_attempts=5, delay=1):
@@ -556,68 +579,51 @@ class Gree(SeleniumHelper):
 
     def _upload_file_with_modal(self, file_path: str):
         """
-        Generic method untuk upload file melalui modal
-
-        Args:
-            file_path: GreeTicket object yang berisi serial_number
-
-        Raises:
-            Exception: Jika upload gagal
+        Generic method untuk upload file melalui modal (Mendukung Auto-Upload & Auto-Close)
         """
         try:
-            # Tunggu semua button di modal footer
-            buttons = self.wait_for(
-                description="Tombol di modal footer",
-                condition=EC.presence_of_all_elements_located(
-                    (By.CSS_SELECTOR, ".modal-footer button")
+            # 1. Jeda sebentar untuk menunggu animasi pop-up modal terbuka
+            time.sleep(1)
+
+            # 2. Langsung cari input file yang tersembunyi (abaikan tombol Unggah di modal)
+            file_input = self.wait_for(
+                description="File input di modal",
+                condition=EC.presence_of_element_located(
+                    (
+                        By.CSS_SELECTOR,
+                        "input[type='file'][accept='image/jpeg,image/png']", # Gunakan selector asli Anda
+                    )
                 ),
             )
 
-            # Cari tombol Unggah yang benar
-            unggah_button_found = False
-            for btn in buttons:
-                classes = btn.get_attribute("class")
-                text = btn.text.strip()
+            # 3. Tampilkan elemen input agar bisa menerima file dari Selenium
+            self.driver.execute_script(
+                """
+                    arguments[0].style.display = 'block';
+                    arguments[0].style.visibility = 'visible';
+                """,
+                file_input,
+            )
 
-                if "Button_blue__" in classes and text == "Unggah":
-                    unggah_button_found = True
+            # 4. Masukkan file gambar
+            file_full_path = os.path.abspath(f"{PUBLIC_DIR}/{file_path}")
+            self.log(f"Memasukkan file: {file_full_path}")
+            file_input.send_keys(file_full_path)
 
-                    # Tunggu file input
-                    file_input = self.wait_for(
-                        description="File input di modal",
-                        condition=EC.presence_of_element_located(
-                            (
-                                By.CSS_SELECTOR,
-                                "input[type='file'][accept='image/jpeg,image/png']",
-                            )
-                        ),
-                    )
+            # 5. TUNGGU PROSES AUTO-UPLOAD SELESAI (KUNCI UTAMA)
+            self.log("Menunggu proses Auto-Upload (loading bar berjalan hingga modal hilang)...")
+            
+            # Kita menggunakan .modal-footer (elemen asli dari script Anda) sebagai patokan.
+            # Jika modal-footer menghilang, berarti modal sudah tertutup dan upload sukses.
+            self.wait_for(
+                description="Menunggu modal tertutup otomatis",
+                condition=EC.invisibility_of_element_located(
+                    (By.CSS_SELECTOR, ".modal-footer") 
+                )
+            )
 
-                    # Make file input visible
-                    self.driver.execute_script(
-                        """
-                            arguments[0].style.display = 'block';
-                            arguments[0].style.visibility = 'visible';
-                        """,
-                        file_input,
-                    )
-
-                    # Upload file
-                    print(f"Ini File Path {file_path}")
-                    file_full_path = os.path.abspath(f"{PUBLIC_DIR}/{file_path}")
-                    print(f"Ini File Full Path {PUBLIC_DIR}/{file_path}")
-                    file_input.send_keys(file_full_path)
-
-                    self.log(f"File berhasil di-upload: {file_path}")
-                    time.sleep(10)  # Wait untuk processing
-
-                    self.log("Tombol Unggah di modal berhasil diklik")
-                    time.sleep(1)
-
-                    break
-
-            if not unggah_button_found:
-                raise Exception("Tombol Unggah tidak ditemukan di modal footer")
+            self.log("Modal berhasil tertutup otomatis, file dipastikan terkirim ke server Gree!")
+            time.sleep(1) # Jeda aman sebelum lanjut memproses foto berikutnya
 
         except Exception as e:
             self.log(f"ERROR di _upload_file_with_modal: {e}")
