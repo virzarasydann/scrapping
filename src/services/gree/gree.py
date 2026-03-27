@@ -604,11 +604,24 @@ class Gree(SeleniumHelper):
                 file_input,
             )
 
-            # Masukkan file gambar
+            
             file_full_path = os.path.abspath(f"{PUBLIC_DIR}/{file_path}")
             self.log(f"Memasukkan file: {file_full_path}")
             file_input.send_keys(file_full_path)
-
+            
+            import time as time_module
+            timestamp = int(time_module.time())
+            
+          
+            nama_file_asli = file_path.split('/')[-1] if '/' in file_path else file_path
+            screenshot_name = f"debug_after_sendkeys_{nama_file_asli}_{timestamp}.png"
+            screenshot_path = f"{PUBLIC_DIR}/{screenshot_name}"
+            
+            
+            time.sleep(1) 
+            self.driver.save_screenshot(screenshot_path)
+            
+            self.log(f"📸 SCREENSHOT SAAT UPLOAD BERHASIL DIAMBIL: {screenshot_name}")
             self.log("Menunggu proses Auto-Upload (memberi waktu browser mengirim file)...")
             
             # 1. JEDA MUTLAK (Sangat Penting! Beri waktu 8 detik agar upload tidak diputus)
