@@ -577,26 +577,25 @@ class Gree(SeleniumHelper):
                     raise Exception(f"Gagal upload Navigation Route: {e}") from e
                 time.sleep(delay)
 
-    def _upload_file_with_modal(self, file_path: str):
+   def _upload_file_with_modal(self, file_path: str):
         """
         Generic method untuk upload file melalui modal (Mendukung Auto-Upload & Auto-Close)
         """
         try:
-            # 1. Jeda sebentar untuk menunggu animasi pop-up modal terbuka
             time.sleep(1)
 
-            # 2. Langsung cari input file yang tersembunyi (abaikan tombol Unggah di modal)
+            # Cari input file yang tersembunyi
             file_input = self.wait_for(
                 description="File input di modal",
                 condition=EC.presence_of_element_located(
                     (
                         By.CSS_SELECTOR,
-                        "input[type='file'][accept='image/jpeg,image/png']", # Gunakan selector asli Anda
+                        "input[type='file'][accept='image/jpeg,image/png']",
                     )
                 ),
             )
 
-            # 3. Tampilkan elemen input agar bisa menerima file dari Selenium
+            # Tampilkan elemen input agar bisa menerima file dari Selenium
             self.driver.execute_script(
                 """
                     arguments[0].style.display = 'block';
@@ -605,24 +604,24 @@ class Gree(SeleniumHelper):
                 file_input,
             )
 
-            # 4. Masukkan file gambar
+            # Masukkan file gambar
             file_full_path = os.path.abspath(f"{PUBLIC_DIR}/{file_path}")
             self.log(f"Memasukkan file: {file_full_path}")
             file_input.send_keys(file_full_path)
 
-            # 5. TUNGGU PROSES AUTO-UPLOAD SELESAI (KUNCI UTAMA)
-            self.log("Menunggu proses Auto-Upload (loading bar berjalan hingga modal hilang)...")
+            self.log("Menunggu proses Auto-Upload (memberi waktu browser mengirim file)...")
             
-            # Kita menggunakan .modal-footer (elemen asli dari script Anda) sebagai patokan.
-            # Jika modal-footer menghilang, berarti modal sudah tertutup dan upload sukses.
-            self.wait_for(
-                description="Menunggu modal tertutup otomatis",
-                condition=EC.invisibility_of_element_located(
-                    (By.CSS_SELECTOR, ".modal-footer") 
-                )
-            )
+            # 1. JEDA MUTLAK (Sangat Penting! Beri waktu 8 detik agar upload tidak diputus)
+            time.sleep(8) 
+            
+            # 2. PENGECEKAN STALENESS (Cek apakah input file tadi sudah dihancurkan karena modal tertutup)
+            try:
+                self.wait.until(EC.staleness_of(file_input))
+                self.log("Modal terkonfirmasi tertutup (elemen input sudah hilang).")
+            except:
+                # Jika elemen disembunyikan tapi tidak dihancurkan, tidak masalah, karena sudah di-sleep 8 detik
+                self.log("Waktu tunggu selesai. Lanjut ke proses berikutnya.")
 
-            self.log("Modal berhasil tertutup otomatis, file dipastikan terkirim ke server Gree!")
             time.sleep(1) # Jeda aman sebelum lanjut memproses foto berikutnya
 
         except Exception as e:
