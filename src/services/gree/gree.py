@@ -577,7 +577,7 @@ class Gree(SeleniumHelper):
                     raise Exception(f"Gagal upload Navigation Route: {e}") from e
                 time.sleep(delay)
 
-   def _upload_file_with_modal(self, file_path: str):
+    def _upload_file_with_modal(self, file_path: str):
         """
         Generic method untuk upload file melalui modal (Mendukung Auto-Upload & Auto-Close)
         """
