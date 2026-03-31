@@ -438,25 +438,52 @@ class Gree(SeleniumHelper):
         3. Klik tombol Simpan
         """
         try:
-            self.log("Memulai proses upload di Step Visit...")
-
-            # Upload Lokasi
             self.upload_lokasi(max_attempts, delay)
-
-            # Upload Navigation Route
             self.upload_navigation_route(max_attempts, delay)
 
-            # Klik tombol Simpan
-            # input("...")
-            self.log("Semua upload selesai, klik tombol Simpan...")
-            button_save = self.wait_for(
-                description="Tombol Simpan di Next Step",
-                condition=EC.element_to_be_clickable(
+            # ========================================================
+            # [PERBAIKAN KUNCI] 
+            # 1. Beri jeda agar state React/animasi benar-benar stabil
+            # ========================================================
+            self.log("Semua upload selesai. Menunggu 3 detik agar sistem web stabil...")
+            time.sleep(3) 
+
+            self.log("Mencari tombol Simpan...")
+            
+            # 2. Cari SEMUA tombol simpan yang ada di HTML (jangan cuma 1)
+            buttons_save = self.wait_for(
+                description="Mencari kumpulan tombol Simpan",
+                condition=EC.presence_of_all_elements_located(
                     (By.XPATH, LOCATORS["button_save_in_next_step"])
                 ),
             )
-            button_save.click()
-            self.log("Tombol Simpan berhasil diklik")
+
+            # 3. Filter: Hanya klik tombol Simpan yang SEDANG TERLIHAT di layar
+            visible_save_btn = None
+            for btn in buttons_save:
+                if btn.is_displayed():
+                    visible_save_btn = btn
+                    break
+
+            if visible_save_btn:
+                # Scroll perlahan ke arah tombol agar tidak tertutup elemen lain
+                self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", visible_save_btn)
+                time.sleep(1)
+                
+                # Coba klik natural ala manusia (lebih disukai React)
+                try:
+                    visible_save_btn.click()
+                except:
+                    # Fallback jika klik natural gagal
+                    self.driver.execute_script("arguments[0].click();", visible_save_btn)
+                    
+                self.log("Tombol Simpan berhasil diklik secara akurat!")
+                
+                # Beri waktu agar data benar-benar tersimpan ke server sebelum pindah halaman
+                time.sleep(3) 
+            else:
+                self.log("ERROR: Tombol Simpan tidak ditemukan atau tidak terlihat di layar!")
+                # Opsional: Bisa panggil self.driver.save_screenshot() di sini untuk mengecek
 
         except Exception as e:
             self.log(f"ERROR di upload_in_step_visit: {e}")
