@@ -181,3 +181,7 @@ async def get_gree_work_worder(id_work_orders: int, db: Session = Depends(get_db
 
     return gree_ticket
 
+@router.get("/health")
+async def health_check():
+    return {"status": "healthy"}
+
